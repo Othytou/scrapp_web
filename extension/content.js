@@ -10,7 +10,11 @@ const config = {
 		}, 'LinkedIn': '', // À compléter
 		'Welcome to the Jungle': '', // À compléter
 		'HelloWork': '', // À compléter
-		'Free-Work': '' // À compléter
+		'Free-Work': {
+			header: 'header.bg-primary',
+			description: '.html-renderer.prose-content'
+		}
+
 	},
 
 	scrappUrls: [
@@ -54,9 +58,11 @@ function addCopyButton() {
 	const selectors = getCurrentSelectors();
 	if (!selectors || !selectors.description) return;
 
-	const contentElement = document.querySelector(selectors.description);
+	const contentElements = document.querySelectorAll(selectors.description);
+	if (contentElements.length === 0) return;
 
-	if (contentElement && !document.getElementById('job-copy-btn')) {
+
+	if (!document.getElementById('job-copy-btn')) {
 
 		const btn = document.createElement('button');
 		btn.id = 'job-copy-btn';
@@ -91,15 +97,22 @@ function addCopyButton() {
 
 		btn.addEventListener('click', () => {
 			const header = selectors.header ? document.querySelector(selectors.header) : null;
-			const description = document.querySelector(selectors.description);
 
-			if (!description) return;
+			// Free-work
+			const descriptionElements = document.querySelectorAll(selectors.description);
+			if (!descriptionElements || descriptionElements.length === 0) return;
+
+			const jobOfferText = Array.from(descriptionElements)
+				.map(el => el.innerText.trim())
+				.join('\n\n');
+
 
 			// Extraction company + position depuis le header Indeed
 			let company = '';
 			let position = '';
 
 			if (header) {
+				// Indeed
 				const titleEl = header.querySelector('[data-testid="jobsearch-JobInfoHeader-title"]')
 					|| header.querySelector('h1')
 					|| header.querySelector('h2');
@@ -108,10 +121,23 @@ function addCopyButton() {
 
 				if (titleEl) position = titleEl.innerText.trim().replace(/\s*-\s*job post$/i, '').trim();
 				if (companyEl) company = companyEl.innerText.trim();
+				// Free-Work — fallback si Indeed n'a rien trouvé
+				if (!position) {
+					const fwTitle = header.querySelector('h1');
+					if (fwTitle) {
+						position = fwTitle.innerText
+							.replace(/Mission freelance/i, '')
+							.trim();
+					}
+				}
+				if (!company) {
+					const fwCompany = header.querySelector('p.font-semibold.text-sm');
+					if (fwCompany) company = fwCompany.innerText.trim();
+				}
 			}
 
 			const payload = {
-				job_offer: description.innerText.trim(),
+				job_offer: jobOfferText,
 				company: company,
 				position: position,
 				url: window.location.href

@@ -38,7 +38,11 @@ function copyJobContent() {
 		}, 'LinkedIn': '', // À compléter
 		'Welcome to the Jungle': '', // À compléter
 		'HelloWork': '', // À compléter
-		'Free-Work': '' // À compléter
+		'Free-Work': {
+			header: 'header.bg-primary',
+			description: '.html-renderer.prose-content'  // multiple blocs à concaténer
+		}
+
 	};
 
 	// URLs supportées
@@ -72,6 +76,14 @@ function copyJobContent() {
 	const description = document.querySelector(selectors.description);
 	if (!description) return;
 
+	const descriptionElements = document.querySelectorAll(selectors.description);
+	if (!descriptionElements || descriptionElements.length === 0) return;
+
+	const jobOfferText = Array.from(descriptionElements)
+		.map(el => el.innerText.trim())
+		.join('\n\n');
+
+
 	let company = '';
 	let position = '';
 
@@ -81,12 +93,21 @@ function copyJobContent() {
 		const companyEl = header.querySelector('[data-testid="inlineHeader-companyName"]')
 			|| header.querySelector('[data-testid="jobsearch-JobInfoHeader-companyName"]');
 
-		if (titleEl) position = titleEl.innerText.trim().replace(/\s*-\s*job post$/i, '').trim();;
+		if (titleEl) position = titleEl.innerText.trim().replace(/\s*-\s*job post$/i, '').trim();
 		if (companyEl) company = companyEl.innerText.trim();
+
+		if (!position) {
+			const fwTitle = header.querySelector('h1');
+			if (fwTitle) position = fwTitle.innerText.replace(/Mission freelance/i, '').trim();
+		}
+		if (!company) {
+			const fwCompany = header.querySelector('p.font-semibold.text-sm');
+			if (fwCompany) company = fwCompany.innerText.trim();
+		}
 	}
 
 	const payload = {
-		job_offer: description.innerText.trim(),
+		job_offer: jobOfferText,
 		company: company,
 		position: position,
 		url: window.location.href
