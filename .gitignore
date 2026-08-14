@@ -28,6 +28,7 @@ __pycache__/
 
 # HTML & PDF
 /template/template_cv_2.html
+/template/template_cv_detaille.html
 output/*.html
 pdf/*.pdf
 
