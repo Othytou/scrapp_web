@@ -30,3 +30,7 @@ __pycache__/
 /template/template_cv_2.html
 output/*.html
 pdf/*.pdf
+
+# Agents
+.claude
+_bmad

@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar CV</title>
+<style>
+/* ============================================================
+   TOKENS — mission control nocturne, une seule ambiance assumée
+   ============================================================ */
+:root{
+  --bg:            #0a0d12;
+  --bg-raised:     #10161f;
+  --bg-raised-2:   #161e29;
+  --ink:           #eef2f6;
+  --ink-dim:       #9fb0c0;
+  --ink-faint:     #5c6c7c;
+  --hairline:      #232c38;
+  --hairline-soft: #171e27;
+
+  --amber:      #f2a341;
+  --amber-dim:  #c9843a;
+  --amber-wash: rgba(242,163,65,.10);
+
+  --cyan:      #5ec8e0;
+  --cyan-dim:  #3f8fa3;
+  --cyan-wash: rgba(94,200,224,.10);
+
+  --kraft:      #d9b878;
+  --kraft-line: #8a7550;
+  --paper:      #ece1cb;
+  --paper-ink:  #2b2418;
+  --thread-red: #c0483f;
+
+  --violet:      #9d8bf7;
+  --violet-dim:  #6a5cc4;
+  --violet-wash: rgba(157,139,247,.10);
+
+  --gold:  #f2c94c;
+  --danger:#e5695a;
+
+  --font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", "IBM Plex Mono", Menlo, Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --maxw: 76rem;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+@media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+::selection{ background:var(--amber); color:#1a1206; }
+
+::-webkit-scrollbar{ width:11px; height:11px; }
+::-webkit-scrollbar-track{ background:var(--bg); }
+::-webkit-scrollbar-thumb{ background:var(--hairline); border-radius:6px; border:2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover{ background:var(--ink-faint); }
+
+h1,h2,h3,h4{ margin:0; font-family:var(--font-mono); text-wrap:balance; }
+p{ margin:0; }
+a{ color:inherit; }
+img,svg{ display:block; }
+
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--accent, var(--amber));
+  margin:0 0 .9rem;
+}
+
+/* icons ------------------------------------------------------ */
+.icon-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+.icon{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex-shrink:0;
+}
+
+/* focus state -------------------------------------------------*/
+a:focus-visible, button:focus-visible, input:focus-visible, label:focus-visible{
+  outline:2px solid var(--amber);
+  outline-offset:3px;
+  border-radius:2px;
+}
+
+/* ============================================================
+   MISSION NAV — dots de progression fixes
+   ============================================================ */
+.missionnav{
+  position:fixed;
+  right:1.4rem;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:50;
+}
+.missionnav ol{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1.1rem; }
+.missionnav a{
+  display:flex; align-items:center; gap:.6rem;
+  text-decoration:none;
+  justify-content:flex-end;
+}
+.missionnav .dot{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--hairline);
+  border:1px solid var(--ink-faint);
+  transition:background .25s, border-color .25s, box-shadow .25s;
+}
+.missionnav a::before{
+  content:attr(data-label);
+  font-family:var(--font-mono);
+  font-size:.66rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  opacity:0;
+  transform:translateX(6px);
+  transition:opacity .2s, transform .2s;
+  white-space:nowrap;
+}
+.missionnav a:hover::before, .missionnav a:focus-visible::before{ opacity:1; transform:translateX(0); }
+.missionnav a.active .dot{
+  background:var(--amber);
+  border-color:var(--amber);
+  box-shadow:0 0 0 4px var(--amber-wash);
+}
+.missionnav a.active::before{ opacity:1; transform:translateX(0); color:var(--amber); }
+@media (max-width:900px){ .missionnav{ display:none; } }
+
+/* ============================================================
+   COVER
+   ============================================================ */
+.cover{
+  position:relative;
+  overflow:hidden;
+  padding:3rem 1.6rem 4rem;
+  border-bottom:1px solid var(--hairline);
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(94,200,224,.08), transparent 60%),
+    var(--bg);
+}
+.scan-sweep{
+  position:absolute;
+  top:-30%; right:-20%;
+  width:60vmax; height:60vmax;
+  border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0deg, var(--cyan-wash) 18deg, transparent 40deg, transparent 360deg);
+  animation:sweep 9s linear infinite;
+  pointer-events:none;
+  opacity:.8;
+}
+@keyframes sweep{ to{ transform:rotate(360deg); } }
+@media (prefers-reduced-motion: reduce){ .scan-sweep{ animation:none; } }
+
+.cover-inner{ max-width:var(--maxw); margin:0 auto; position:relative; }
+
+.hud-bar{
+  font-family:var(--font-mono);
+  font-size:.72rem;
+  letter-spacing:.06em;
+  color:var(--ink-faint);
+  display:flex; flex-wrap:wrap; gap:.5rem;
+  align-items:center;
+  padding-bottom:1.4rem;
+  margin-bottom:1.6rem;
+  border-bottom:1px dashed var(--hairline);
+}
+.hud-bar .sep{ opacity:.4; }
+.hud-bar .status-live{ color:var(--cyan); display:inline-flex; align-items:center; gap:.45rem; }
+.hud-bar .status-live::before{
+  content:""; width:6px; height:6px; border-radius:50%;
+  background:var(--cyan); box-shadow:0 0 0 3px var(--cyan-wash);
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+@media (prefers-reduced-motion: reduce){ .hud-bar .status-live::before{ animation:none; } }
+
+.cover h1{
+  font-size:clamp(2.6rem, 7vw, 4.6rem);
+  font-weight:800;
+  letter-spacing:-.01em;
+  color:var(--ink);
+  display:flex; align-items:baseline; gap:.15em;
+}
+.cover h1 .cursor{ color:var(--amber); animation:blink 1.1s step-end infinite; }
+@keyframes blink{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+@media (prefers-reduced-motion: reduce){ .cover h1 .cursor{ animation:none; } }
+
+.cover-sub{
+  max-width:44rem;
+  margin-top:1rem;
+  font-size:1.08rem;
+  color:var(--ink-dim);
+}
+
+.cover-meta{
+  margin-top:2.2rem;
+  display:grid;
+  gap:1px;
+  background:var(--hairline);
+  border:1px solid var(--hairline);
+  border-radius:10px;
+  overflow:hidden;
+}
+.cover-meta > div{
+  background:var(--bg-raised);
+  padding:.9rem 1.1rem;
+  display:grid;
+  grid-template-columns:9rem 1fr;
+  gap:1rem;
+  align-items:baseline;
+}
+.cover-meta .k{
+  font-family:var(--font-mono);
+  font-size:.68rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--amber-dim);
+}
+.cover-meta .v{ font-size:.92rem; color:var(--ink-dim); }
+@media (max-width:640px){
+  .cover-meta > div{ grid-template-columns:1fr; gap:.25rem; }
+}
+
+/* ============================================================
+   SECTION shell shared by the four technique lenses
+   ============================================================ */
+.section{
+  padding:5rem 1.6rem;
+  position:relative;
+  border-bottom:1px solid var(--hairline);
+}
+.section-inner{ max-width:var(--maxw); margin:0 auto; }
+.section-head{ max-width:42rem; margin-bottom:3rem; }
+.section-head h2{
+  font-size:clamp(1.9rem, 4.2vw, 2.7rem);
+  color:var(--ink);
+  font-weight:700;
+}
+.section-lede{
+  margin-top:.9rem;
+  color:var(--ink-dim);
+  font-size:1.02rem;
+  max-width:38rem;
+}
+
+.reveal{ opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; }
+.reveal.in{ opacity:1; transform:translateY(0); }
+@media (prefers-reduced-motion: reduce){
+  .reveal{ opacity:1; transform:none; transition:none; }
+}
+
+/* ============================================================
+   01 · MÉTÉO — bulletin radar
+   ============================================================ */
+.section--meteo{
+  --accent:var(--cyan);
+  background:
+    repeating-linear-gradient(180deg, rgba(94,200,224,.035) 0 1px, transparent 1px 34px),
+    var(--bg);
+}
+.forecast-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap:1px;
+  background:var(--hairline);
+  border:1px solid var(--hairline);
+  border-radius:12px;
+  overflow:hidden;
+}
+.tile{
+  background:var(--bg-raised);
+  padding:1.3rem 1.3rem 1.5rem;
+  display:flex;
+  flex-direction:column;
+  gap:.8rem;
+  transition:background .2s;
+}
+.tile:hover{ background:var(--bg-raised-2); }
+.tile-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:.6rem; }
+.tile .icon{ width:26px; height:26px; color:var(--cyan); }
+.tile-tag{
+  font-family:var(--font-mono);
+  font-size:.6rem;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--cyan-dim);
+  border:1px solid var(--cyan-dim);
+  border-radius:999px;
+  padding:.2rem .55rem;
+  white-space:nowrap;
+}
+.tile h3{ font-family:var(--font-sans); font-size:1rem; font-weight:700; color:var(--ink); }
+.tile p{ font-size:.9rem; color:var(--ink-dim); }
+
+/* ============================================================
+   02 · SCAMPER — relevé de plan technique
+   ============================================================ */
+.section--scamper{
+  --accent:var(--amber);
+  background:
+    repeating-linear-gradient(0deg, rgba(94,200,224,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, rgba(94,200,224,.05) 0 1px, transparent 1px 28px),
+    #0c1420;
+}
+.blueprint{ display:flex; flex-direction:column; gap:1px; background:var(--hairline); border:1px solid var(--hairline); border-radius:12px; overflow:hidden; }
+.module{
+  background:#0e1826;
+  display:grid;
+  grid-template-columns:11rem 1fr;
+  gap:1.4rem;
+  padding:1.5rem 1.5rem;
+}
+.module-id{ display:flex; align-items:flex-start; gap:.8rem; }
+.module-letter{
+  font-family:var(--font-mono);
+  font-size:1.6rem;
+  font-weight:800;
+  color:var(--amber);
+  line-height:1;
+  border:1px solid var(--amber-dim);
+  border-radius:8px;
+  width:2.4rem; height:2.4rem;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.module-id .icon{ width:22px; height:22px; color:var(--amber); margin-top:.35rem; }
+.module-name{ font-family:var(--font-mono); font-size:.92rem; color:var(--ink); font-weight:700; }
+.module-name span{ display:block; font-size:.68rem; color:var(--ink-faint); font-weight:400; letter-spacing:.04em; margin-top:.15rem; }
+
+.module-list{ display:flex; flex-direction:column; gap:.9rem; }
+.module-item{
+  border-left:2px solid var(--hairline);
+  padding-left:.9rem;
+}
+.module-item h4{ font-family:var(--font-sans); font-size:.94rem; font-weight:700; color:var(--ink); margin-bottom:.25rem; }
+.module-item p{ font-size:.87rem; color:var(--ink-dim); }
+
+@media (max-width:720px){
+  .module{ grid-template-columns:1fr; }
+  .module-id{ flex-direction:row; }
+}
+
+/* ============================================================
+   03 · JOB TO BE DONE — dossier d'instruction
+   ============================================================ */
+.section--jtbd{
+  --accent:var(--kraft);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(217,184,120,.06), transparent 65%),
+    var(--bg);
+}
+.case-cover{
+  background:var(--paper);
+  color:var(--paper-ink);
+  border-radius:6px;
+  padding:2rem 2.2rem;
+  position:relative;
+  margin-bottom:2.6rem;
+  box-shadow:0 18px 40px -20px rgba(0,0,0,.6);
+  background-image:
+    radial-gradient(rgba(43,36,24,.05) 1px, transparent 1px);
+  background-size:5px 5px;
+}
+.case-cover::before{
+  content:"DOSSIER";
+  position:absolute;
+  top:-.7rem; left:2rem;
+  background:var(--thread-red);
+  color:#fff5ed;
+  font-family:var(--font-mono);
+  font-size:.62rem;
+  letter-spacing:.14em;
+  padding:.28rem .7rem;
+  border-radius:3px;
+  box-shadow:0 3px 8px rgba(0,0,0,.35);
+}
+.case-cover .stamp{
+  position:absolute;
+  top:1.4rem; right:1.6rem;
+  font-family:var(--font-mono);
+  font-size:.66rem;
+  letter-spacing:.1em;
+  color:var(--thread-red);
+  border:1.5px solid var(--thread-red);
+  border-radius:4px;
+  padding:.25rem .5rem;
+  transform:rotate(6deg);
+  opacity:.75;
+}
+.case-cover h3{
+  font-family:var(--font-mono);
+  font-size:clamp(1.15rem,2.6vw,1.5rem);
+  line-height:1.5;
+  font-weight:700;
+  max-width:40rem;
+}
+.case-cover .metric{
+  margin-top:1.4rem;
+  display:inline-flex;
+  align-items:baseline;
+  gap:.6rem;
+  font-family:var(--font-mono);
+  border-top:1px dashed var(--kraft-line);
+  padding-top:1rem;
+}
+.case-cover .metric b{ font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--thread-red); }
+.case-cover .metric span{ font-size:.92rem; }
+
+.case-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(16rem, 1fr));
+  gap:1.4rem;
+}
+.case-card{
+  background:var(--paper);
+  color:var(--paper-ink);
+  border-radius:3px;
+  padding:1.2rem 1.2rem 1.4rem;
+  position:relative;
+  box-shadow:0 12px 24px -16px rgba(0,0,0,.55);
+  font-family:var(--font-mono);
+}
+.case-card:nth-child(odd){ transform:rotate(-.4deg); }
+.case-card:nth-child(even){ transform:rotate(.35deg); }
+.case-card::before{
+  content:"";
+  position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+  width:11px; height:11px; border-radius:50%;
+  background:var(--thread-red);
+  box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+.case-tab{
+  font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--thread-red); font-weight:700; margin-bottom:.7rem;
+  display:flex; align-items:center; gap:.4rem;
+}
+.case-card .icon{ width:20px; height:20px; color:var(--kraft-line); }
+.case-card h4{ font-size:.92rem; font-weight:700; margin-bottom:.4rem; line-height:1.35; }
+.case-card p{ font-size:.79rem; line-height:1.55; color:#4a3f2b; }
+
+/* ============================================================
+   04 · TIME HORIZON LADDER
+   ============================================================ */
+.section--horizon{
+  --accent:var(--violet);
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 100%, rgba(157,139,247,.10), transparent 65%),
+    var(--bg);
+}
+.ladder{
+  position:relative;
+  padding-left:2.6rem;
+}
+.ladder::before{
+  content:"";
+  position:absolute; left:.85rem; top:.4rem; bottom:.4rem; width:2px;
+  background:linear-gradient(180deg, var(--amber) 0%, var(--violet) 55%, #362a70 100%);
+  border-radius:2px;
+}
+.rung{ position:relative; padding-bottom:3rem; }
+.rung:last-child{ padding-bottom:0; }
+.rung::before{
+  content:"";
+  position:absolute; left:-2.6rem; top:.3rem;
+  width:1.75rem; height:2px;
+  background:var(--rung-color, var(--violet));
+}
+.rung::after{
+  content:"";
+  position:absolute; left:calc(-2.6rem + 1.75rem - 5px); top:-2px;
+  width:11px; height:11px; border-radius:50%;
+  background:var(--bg);
+  border:2px solid var(--rung-color, var(--violet));
+}
+.rung-head{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; }
+.rung-head .icon{ width:24px; height:24px; color:var(--rung-color, var(--violet)); }
+.rung-head h3{
+  font-family:var(--font-mono);
+  font-size:1.15rem;
+  color:var(--rung-color, var(--violet));
+  letter-spacing:.02em;
+}
+.horizon-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(16rem,1fr)); gap:1px; background:var(--hairline); border:1px solid var(--hairline); border-radius:10px; overflow:hidden; }
+.horizon-cards.single{ grid-template-columns:1fr; }
+.hcard{ background:var(--bg-raised); padding:1.1rem 1.3rem; }
+.hcard p{ font-size:.9rem; color:var(--ink-dim); }
+
+.transmissions{ margin-top:3rem; display:grid; gap:1rem; }
+.transmission{
+  border:1px solid var(--hairline);
+  border-left:3px solid var(--gold);
+  border-radius:8px;
+  padding:1.1rem 1.3rem;
+  background:var(--bg-raised);
+}
+.transmission .eyebrow{ --accent:var(--gold); margin-bottom:.5rem; }
+.transmission p{ color:var(--ink); font-size:.95rem; }
+
+/* ============================================================
+   05 · SYNTHÈSE — convergence
+   ============================================================ */
+.section--synthese{
+  --accent:var(--gold);
+  background:
+    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(242,201,76,.09), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 20% 100%, rgba(157,139,247,.08), transparent 60%),
+    var(--bg);
+  border-bottom:none;
+}
+.convergence{
+  position:relative;
+  margin-bottom:3.4rem;
+  padding-top:1.4rem;
+}
+.convergence-label{
+  font-family:var(--font-mono);
+  font-size:.68rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  margin-bottom:1.2rem;
+}
+.convergence-stage{ position:relative; min-height:180px; }
+.threads{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.threads path{
+  fill:none;
+  stroke-width:1.6;
+  opacity:.55;
+}
+.chips-row{ display:flex; flex-wrap:wrap; gap:1rem; position:relative; z-index:2; }
+.chip{
+  display:flex; align-items:center; gap:.55rem;
+  background:var(--bg-raised);
+  border:1px solid var(--chip-color, var(--amber));
+  border-radius:9px;
+  padding:.65rem .9rem;
+  max-width:16rem;
+}
+.chip .icon{ width:18px; height:18px; color:var(--chip-color, var(--amber)); flex-shrink:0; }
+.chip-text b{ display:block; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; color:var(--chip-color, var(--amber)); margin-bottom:.15rem; }
+.chip-text span{ font-size:.82rem; color:var(--ink-dim); line-height:1.3; }
+
+.result-wrap{ display:flex; justify-content:center; margin-top:2.6rem; position:relative; z-index:2; }
+.result{
+  max-width:34rem;
+  width:100%;
+  background:var(--bg-raised-2);
+  border:1px solid var(--gold);
+  box-shadow:0 0 0 1px rgba(242,201,76,.15), 0 20px 50px -30px rgba(242,201,76,.4);
+  border-radius:12px;
+  padding:1.4rem 1.6rem;
+  text-align:left;
+}
+.result .icon{ width:26px; height:26px; color:var(--gold); margin-bottom:.7rem; }
+.result h4{ font-family:var(--font-sans); font-size:1.08rem; font-weight:700; color:var(--ink); margin-bottom:.5rem; }
+.result p{ font-size:.9rem; color:var(--ink-dim); }
+
+.checklist{
+  margin-top:4rem;
+  border:1px solid var(--hairline);
+  border-radius:12px;
+  background:var(--bg-raised);
+  padding:1.8rem 1.8rem 1.6rem;
+}
+.checklist-head{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+.checklist-head h3{ font-family:var(--font-mono); font-size:1.05rem; color:var(--ink); }
+.checklist-head span{ font-family:var(--font-mono); font-size:.68rem; color:var(--ink-faint); letter-spacing:.08em; }
+.check-item{
+  display:flex; align-items:flex-start; gap:.8rem;
+  padding:.7rem 0;
+  border-top:1px solid var(--hairline-soft);
+}
+.check-item:first-of-type{ border-top:none; }
+.check-item input{ appearance:none; -webkit-appearance:none; width:1.05rem; height:1.05rem; margin-top:.15rem; border:1.5px solid var(--ink-faint); border-radius:4px; flex-shrink:0; cursor:pointer; position:relative; transition:border-color .15s, background .15s; }
+.check-item input:checked{ background:var(--gold); border-color:var(--gold); }
+.check-item input:checked::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:.72rem; color:#1a1206; font-weight:700; }
+.check-item label{ font-size:.94rem; color:var(--ink); cursor:pointer; }
+.check-item label span{ display:block; font-size:.82rem; color:var(--ink-dim); margin-top:.15rem; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.colophon{
+  padding:3rem 1.6rem 4rem;
+  text-align:center;
+}
+.colophon-inner{ max-width:var(--maxw); margin:0 auto; }
+.colophon p{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.06em; color:var(--ink-faint); }
+.colophon p + p{ margin-top:.4rem; }
+</style>
+</head>
+<body>
+
+<svg class="icon-defs" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="12" y2="7"/><line x1="12" y1="12" x2="16" y2="14"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16c1-1.5 1-3 1-5a5 5 0 0 1 10 0c0 2 0 3.5 1 5H6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><circle cx="12" cy="14" r="7"/><line x1="12" y1="14" x2="15" y2="10"/><line x1="6" y1="14" x2="8" y2="14"/><line x1="18" y1="14" x2="16" y2="14"/></symbol>
+<symbol id="i-toggle" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="8" rx="4"/><circle cx="15" cy="13" r="2.6" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-notebook" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></symbol>
+<symbol id="i-fog" viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="12.5" x2="20" y2="12.5" opacity=".65"/><line x1="4" y1="17" x2="20" y2="17" opacity=".35"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="1"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="8" y1="3" x2="8" y2="6"/><line x1="16" y1="3" x2="16" y2="6"/></symbol>
+<symbol id="i-cluster" viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="12" cy="16" r="2"/><line x1="7" y1="9" x2="12" y2="14"/><line x1="17" y1="9" x2="12" y2="14"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6l7-3Z"/></symbol>
+<symbol id="i-mood" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r=".9" style="fill:currentColor;stroke:none"/><circle cx="15.5" cy="10" r=".9" style="fill:currentColor;stroke:none"/><path d="M8 15.5c1.4 1.3 6.6 1.3 8 0"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><polygon points="12,3 22,20 2,20"/><line x1="12" y1="9.5" x2="12" y2="14.5"/><circle cx="12" cy="17.2" r=".9" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-loop" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.5-5.7"/><polyline points="18.2,3.6 17.5,6.3 14.8,6.3"/><path d="M20 12a8 8 0 0 1-13.5 5.7"/><polyline points="5.8,20.4 6.5,17.7 9.2,17.7"/></symbol>
+
+<symbol id="i-swap" viewBox="0 0 24 24"><line x1="4" y1="8" x2="17" y2="8"/><polyline points="13,4 17,8 13,12"/><line x1="20" y1="16" x2="7" y2="16"/><polyline points="11,20 7,16 11,12"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/></symbol>
+<symbol id="i-adapt" viewBox="0 0 24 24"><rect x="3" y="3" width="11" height="11" rx="2"/><circle cx="16" cy="16" r="6"/></symbol>
+<symbol id="i-resize" viewBox="0 0 24 24"><line x1="12" y1="12" x2="4" y2="4"/><polyline points="4,9 4,4 9,4"/><line x1="12" y1="12" x2="20" y2="20"/><polyline points="20,15 20,20 15,20"/></symbol>
+<symbol id="i-redirect" viewBox="0 0 24 24"><polyline points="4,6 14,6 14,15"/><polyline points="10,11 14,15 18,11"/></symbol>
+<symbol id="i-cut" viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke-dasharray="3 3"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/></symbol>
+<symbol id="i-mirror" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2 3"/><polyline points="9,7 5,11 9,15"/><polyline points="15,7 19,11 15,15"/></symbol>
+
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-magnifier" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><line x1="5" y1="3" x2="5" y2="21"/><path d="M5 4h13l-3.5 4L18 12H5Z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="1"/><polyline points="3,7 12,14 21,7"/></symbol>
+<symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="1.5"/><rect x="9" y="2" width="6" height="4" rx="1"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></symbol>
+<symbol id="i-balance" viewBox="0 0 24 24"><line x1="12" y1="4" x2="12" y2="20"/><line x1="5" y1="8" x2="19" y2="8"/><path d="M5 8 L2 15 A3 3 0 0 0 8 15 Z"/><path d="M19 8 L16 15 A3 3 0 0 0 22 15 Z"/><line x1="8" y1="21" x2="16" y2="21"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="15,9 13,13 9,15 11,11"/><circle cx="12" cy="12" r="1" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12C4 7 8 4 12 4s8 3 10 8c-2 5-6 8-10 8s-8-3-10-8Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 3h8v4a4 4 0 0 1-8 0V3Z"/><path d="M8 4H5a3 3 0 0 0 3 5"/><path d="M16 4h3a3 3 0 0 1-3 5"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></symbol>
+
+<symbol id="i-rocket" viewBox="0 0 24 24"><path d="M12 2c3 3 4 7 3 12l-3 3-3-3c-1-5 0-9 3-12Z"/><line x1="9.5" y1="14" x2="6.5" y2="18"/><line x1="14.5" y1="14" x2="17.5" y2="18"/><circle cx="12" cy="9" r="1.3" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-orbit" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="4"/><circle cx="12" cy="12" r="1.6" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-infinite" viewBox="0 0 24 24"><circle cx="8.5" cy="12" r="4.2"/><circle cx="15.5" cy="12" r="4.2"/></symbol>
+<symbol id="i-beacon" viewBox="0 0 24 24"><circle cx="12" cy="17" r="2.6"/><line x1="12" y1="4" x2="12" y2="10"/><line x1="5" y1="8" x2="8" y2="10.8"/><line x1="19" y1="8" x2="16" y2="10.8"/></symbol>
+</defs>
+</svg>
+
+<nav class="missionnav" aria-label="Navigation de session">
+  <ol>
+    <li><a href="#meteo" data-label="Météo"><span class="dot"></span></a></li>
+    <li><a href="#scamper" data-label="SCAMPER"><span class="dot"></span></a></li>
+    <li><a href="#jtbd" data-label="Le vrai job"><span class="dot"></span></a></li>
+    <li><a href="#horizon" data-label="Horizon"><span class="dot"></span></a></li>
+    <li><a href="#synthese" data-label="Synthèse"><span class="dot"></span></a></li>
+  </ol>
+</nav>
+
+<header class="cover">
+  <div class="scan-sweep" aria-hidden="true"></div>
+  <div class="cover-inner">
+    <div class="hud-bar">
+      <span>SESSION 2026-08-14</span><span class="sep">/</span><span>MODE : IDEATE FOR ME</span><span class="sep">/</span><span class="status-live">STATUT : CLÔTURÉ</span>
+    </div>
+    <p class="eyebrow" style="--accent:var(--amber)">Session de brainstorming — dossier de sortie</p>
+    <h1>Radar CV<span class="cursor">_</span></h1>
+    <p class="cover-sub">Une extension de navigateur capte une offre d'emploi, un agent IA local retaille le CV pour le score ATS. Quatre passes de lecture sur ce même pipeline — une météo intérieure, une révision de plans, une redéfinition du vrai job à faire, une projection dans le temps — pour un seul objectif : plus d'entretiens, pour moins d'heures perdues.</p>
+
+    <div class="cover-meta">
+      <div><span class="k">Sujet</span><span class="v">Pipeline CV auto-généré (extension + agent IA) — remplacer Ollama, enrichir avec le MCP LinkedIn</span></div>
+      <div><span class="k">Cadre</span><span class="v">Usage strictement personnel et non commercial — aucune lecture marché ni client, uniquement l'outil et son utilisateur unique</span></div>
+      <div><span class="k">Méthode</span><span class="v">Mood Weather Report (tirage aléatoire) → SCAMPER et Job to Be Done (choisis par le coach) → Time Horizon Ladder (bonus)</span></div>
+      <div><span class="k">Terrain lu</span><span class="v">Extension Manifest V3 (5 sites, sélecteur LinkedIn encore vide), api/agent.py (Ollama qwen3.5:9b via httpx), api/agent.md (contrat patch-JSON anti-hallucination ATS), .env.example (clé Claude déjà prévue, jamais branchée)</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================================================
+       01 · MÉTÉO INTÉRIEURE
+       ============================================================ -->
+  <section id="meteo" class="section section--meteo">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <p class="eyebrow">Technique 01 — lentille émotionnelle</p>
+        <h2>Bulletin météo intérieur</h2>
+        <p class="section-lede">Lire le pipeline non pas comme du code mais comme un climat : où sont l'attente, la tension, le brouillard, l'alerte ? Douze conditions relevées sur le poste de génération.</p>
+      </div>
+
+      <div class="forecast-grid reveal">
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-clock"/></svg><span class="tile-tag">Tension</span></div><h3>Compte à rebours visuel</h3><p>Un compte à rebours pendant la génération, au lieu du silence du terminal, pour transformer l'attente en tension productive.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-bell"/></svg><span class="tile-tag">Soulagement</span></div><h3>Notification native</h3><p>Une notification desktop quand le CV est prêt, plutôt qu'un simple log noyé dans la console.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-gauge"/></svg><span class="tile-tag">Vigilance</span></div><h3>Jauge ATS en direct</h3><p>Une jauge de confiance ATS affichée en direct pendant que la génération tourne.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-toggle"/></svg><span class="tile-tag">Arbitrage</span></div><h3>Bascule de moteur</h3><p>Bascule automatique selon l'enjeu de l'offre : Claude API pour les offres prioritaires, modèle local rapide pour le reste.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-notebook"/></svg><span class="tile-tag">Mémoire</span></div><h3>Journal d'humeur</h3><p>Un journal d'humeur par candidature dans le CRM, croisé plus tard avec le taux de réponse.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-fog"/></svg><span class="tile-tag">Prudence</span></div><h3>Mode brouillard</h3><p>Détecter une offre trop vague → demander une clarification humaine, plutôt qu'halluciner des mots-clés.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-calendar"/></svg><span class="tile-tag">Recul</span></div><h3>Digest hebdomadaire</h3><p>Un digest automatique : candidatures envoyées, taux de réponse, compétences tendance de la semaine.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-cluster"/></svg><span class="tile-tag">Efficacité</span></div><h3>Cluster d'offres</h3><p>Détecter un cluster d'offres similaires en peu de temps → proposer un CV de base pré-optimisé pour ce cluster.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-shield"/></svg><span class="tile-tag">Arbitrage</span></div><h3>Confiant vs review</h3><p>Un bouton « confiant, envoie tel quel » face à une review humaine obligatoire, selon l'enjeu perçu de l'offre.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-mood"/></svg><span class="tile-tag">Lucidité</span></div><h3>Mood par génération</h3><p>Le mood de chaque génération enregistré (rapide/serein vs lent/frustrant), pour objectiver si Ollama était vraiment le problème.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-alert"/></svg><span class="tile-tag">Alerte</span></div><h3>Seuil ATS</h3><p>Alerte si le CV généré tombe sous un score ATS seuil → régénération auto avec un prompt renforcé, plutôt qu'un CV livré faible.</p></div>
+
+        <div class="tile"><div class="tile-top"><svg class="icon" width="26" height="26"><use href="#i-loop"/></svg><span class="tile-tag">Apprentissage</span></div><h3>Boucle de feedback</h3><p>À la première réponse positive, afficher automatiquement quels éléments du patch ont été utilisés dans cette candidature.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       02 · SCAMPER
+       ============================================================ -->
+  <section id="scamper" class="section section--scamper">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <p class="eyebrow">Technique 02 — passe architecturale systématique</p>
+        <h2>Relevé de plans SCAMPER</h2>
+        <p class="section-lede">Sept opérations, une par une, appliquées à la même architecture : extension → webhook → agent → patch HTML → CRM.</p>
+      </div>
+
+      <div class="blueprint reveal">
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">S</div><div><div class="module-name">Substitute<span>remplacer une pièce</span></div></div><svg class="icon" width="22" height="22"><use href="#i-swap"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Claude API remplace Ollama</h4><p>Remplacer Ollama/Qwen par l'API Claude — déjà anticipée dans .env.example — pour gagner en vitesse et en qualité de rédaction.</p></div>
+            <div class="module-item"><h4>Architecture hybride</h4><p>Un modèle local léger pour un premier tri rapide, puis Claude pour la passe finale de rédaction.</p></div>
+            <div class="module-item"><h4>Jinja2 au lieu de BeautifulSoup</h4><p>Remplacer le patch HTML fragile par un templating Jinja2 plus robuste, pour réduire le risque de casse de structure.</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">C</div><div><div class="module-name">Combine<span>coupler deux pièces</span></div></div><svg class="icon" width="22" height="22"><use href="#i-link"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>MCP LinkedIn + webhook</h4><p>Coupler le webhook au MCP LinkedIn pour récupérer automatiquement le recruteur associé et personnaliser une accroche de contact.</p></div>
+            <div class="module-item"><h4>Lettre de motivation</h4><p>Générer en plus une courte lettre de motivation, dans le même appel et le même contexte que le CV.</p></div>
+            <div class="module-item"><h4>Scoring de priorité CRM</h4><p>Scoring automatique de priorité de candidature à partir du match de compétences, pour trier les offres à traiter en premier.</p></div>
+            <div class="module-item"><h4>Profil entreprise LinkedIn</h4><p>Scraper via MCP la page profil recherché de l'entreprise, pour enrichir le contexte au-delà du texte brut de l'offre.</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">A</div><div><div class="module-name">Adapt<span>réemployer un pattern</span></div></div><svg class="icon" width="22" height="22"><use href="#i-adapt"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Pattern highlight/inject/rewrite</h4><p>Réutiliser le pattern déjà pensé dans agent.md pour piloter aussi une lettre de motivation.</p></div>
+            <div class="module-item"><h4>Vrai parseur ATS</h4><p>Tester le CV généré avec un parseur ATS open-source avant envoi, pour un score réel plutôt qu'une estimation du LLM.</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">M</div><div><div class="module-name">Modify<span>redimensionner</span></div></div><svg class="icon" width="22" height="22"><use href="#i-resize"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Prompt découpé en appels</h4><p>Découper le gros prompt unique en appels spécialisés (extraction de mots-clés puis réécriture), plus fiable même avec un modèle plus faible.</p></div>
+            <div class="module-item"><h4>Pool de templates CV</h4><p>Étoffer le pool de templates (tech corporate / startup / agence), sélectionné automatiquement selon le secteur détecté.</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">P</div><div><div class="module-name">Put to other use<span>détourner</span></div></div><svg class="icon" width="22" height="22"><use href="#i-redirect"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Questions d'entretien probables</h4><p>Réutiliser l'extraction de mots-clés de l'offre pour générer automatiquement des questions d'entretien probables.</p></div>
+            <div class="module-item"><h4>Plan de formation personnel</h4><p>Exploiter les unmatched_skills déjà loggés en base comme plan de formation (compétences récurrentes non maîtrisées).</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">E</div><div><div class="module-name">Eliminate<span>retirer</span></div></div><svg class="icon" width="22" height="22"><use href="#i-cut"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Scan du fil LinkedIn</h4><p>Via le MCP LinkedIn, scanner le fil d'offres recommandées et déclencher le pipeline sans copier-coller manuel page par page.</p></div>
+            <div class="module-item"><h4>Infra simplifiée</h4><p>Un seul process Python + SQLite pour un usage solo, au lieu du docker compose complet à chaque lancement.</p></div>
+          </div>
+        </div>
+
+        <div class="module">
+          <div class="module-id"><div class="module-letter">R</div><div><div class="module-name">Reverse<span>inverser le sens</span></div></div><svg class="icon" width="22" height="22"><use href="#i-mirror"/></svg></div>
+          <div class="module-list">
+            <div class="module-item"><h4>Score offre → CV avant de postuler</h4><p>Évaluer aussi l'offre contre le CV → score de compatibilité affiché avant de décider de postuler, pour filtrer les offres à faible probabilité.</p></div>
+            <div class="module-item"><h4>Briques d'expérience atomiques</h4><p>Remplacer le CV de base unique par des briques d'expérience atomiques, composées dynamiquement bullet par bullet selon l'offre.</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       03 · JOB TO BE DONE
+       ============================================================ -->
+  <section id="jtbd" class="section section--jtbd">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <p class="eyebrow">Technique 03 — le vrai job</p>
+        <h2>Dossier d'instruction</h2>
+        <p class="section-lede">Sortir du cadre « générer un CV » pour interroger ce que l'outil doit vraiment accomplir — et instruire chaque sous-job séparément.</p>
+      </div>
+
+      <div class="case-cover reveal">
+        <span class="stamp">Nord étoile</span>
+        <h3>« Le vrai job n'est pas de générer un CV, mais de maximiser la probabilité d'entretien par heure investie. »</h3>
+        <div class="metric"><b>Métrique nord étoile</b><span>temps humain investi par candidature</span></div>
+      </div>
+
+      <div class="case-grid reveal">
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-magnifier"/></svg>Sous-job</div><h4>Savoir vite si ça vaut le coup</h4><p>Un score de matching en quelques secondes après copie de l'offre, avant de lancer la génération complète.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-flag"/></svg>Sous-job</div><h4>Ne pas répéter la même erreur</h4><p>Une base de patterns de candidatures jamais répondues (même secteur/stack) pour signaler des red flags avant de repostuler.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-mail"/></svg>Sous-job</div><h4>Garder une trace sans effort</h4><p>Auto-détection des réponses par parsing de boîte mail, pour mettre à jour le statut CRM automatiquement.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-clipboard"/></svg>Sous-job</div><h4>Être prêt à l'entretien</h4><p>Auto-générer une fiche de brief (entreprise + questions probables + points du CV à défendre) au passage du statut interview.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-balance"/></svg>Sous-job</div><h4>Rester cohérent dans le temps</h4><p>Détecter si deux CV envoyés à la même entreprise racontent une histoire incohérente, et prévenir avant envoi.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-compass"/></svg>Sous-job</div><h4>Économiser l'énergie de décision</h4><p>Mode pilote automatique complet — détection → scoring → génération → envoi si score > seuil — avec notification a posteriori.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-eye"/></svg>Sous-job</div><h4>Ne jamais mentir</h4><p>Étendre le garde-fou anti-invention déjà présent dans agent.md à un vrai diff sémantique entre bullet original et généré, avant sauvegarde.</p></div>
+
+        <div class="case-card"><div class="case-tab"><svg class="icon" width="20" height="20"><use href="#i-trophy"/></svg>Sous-job</div><h4>Reconnaître un pattern gagnant</h4><p>Analyse rétrospective périodique sur les candidatures interview/positives vs les autres, pour ajuster automatiquement les futurs prompts.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       04 · TIME HORIZON LADDER
+       ============================================================ -->
+  <section id="horizon" class="section section--horizon">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <p class="eyebrow">Technique 04 — projection (bonus)</p>
+        <h2>Échelle temporelle</h2>
+        <p class="section-lede">Le même pipeline vu à trois focales : 1 an, 10 ans, 100 ans. Ce qui change d'échelle, et ce qui ne bouge jamais.</p>
+      </div>
+
+      <div class="ladder reveal">
+
+        <div class="rung" style="--rung-color:var(--amber)">
+          <div class="rung-head"><svg class="icon" width="24" height="24"><use href="#i-rocket"/></svg><h3>1 an</h3></div>
+          <div class="horizon-cards single">
+            <div class="hcard"><p>Pipeline stabilisé sur Claude API, scoring offre → CV avant génération complète, MCP LinkedIn branché, CRM auto-mis à jour par parsing email, lettre de motivation générée en parallèle du CV.</p></div>
+          </div>
+        </div>
+
+        <div class="rung" style="--rung-color:var(--violet)">
+          <div class="rung-head"><svg class="icon" width="24" height="24"><use href="#i-orbit"/></svg><h3>10 ans</h3></div>
+          <div class="horizon-cards">
+            <div class="hcard"><p>Si recruteurs et candidats utilisent tous des agents IA, un CV bien rédigé devient trivial pour tout le monde → l'avantage se déplace vers la vitesse de réaction et l'accès à des données propriétaires (réseau, recommandations réelles).</p></div>
+            <div class="hcard"><p>Le CV statique devient un adaptateur legacy vers un profil vivant, interrogeable en temps réel par l'agent recruteur (API candidat ↔ API entreprise).</p></div>
+            <div class="hcard"><p>Le vrai levier différenciant devient un historique de compétences vérifiable — preuve de travail, pas déclaratif — plutôt que la qualité de rédaction.</p></div>
+          </div>
+        </div>
+
+        <div class="rung" style="--rung-color:#7a6ad1">
+          <div class="rung-head"><svg class="icon" width="24" height="24"><use href="#i-infinite"/></svg><h3>100 ans</h3></div>
+          <div class="horizon-cards single">
+            <div class="hcard"><p>La candidature individuelle disparaît au profit d'un matching permanent en flux continu. Ce qui reste stable à toutes les échelles : ne jamais mentir, coller au contexte réel.</p></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="transmissions reveal">
+        <div class="transmission">
+          <p class="eyebrow">Transmission — insight d'échelle</p>
+          <p>Investir maintenant dans la richesse et la véracité des données du CRM (preuves, résultats mesurables par expérience) rapporte plus à long terme que peaufiner encore le prompt de réécriture.</p>
+        </div>
+        <div class="transmission">
+          <p class="eyebrow">Transmission — levier durable</p>
+          <p>Le levier durable n'est pas la qualité de rédaction du CV, bientôt commoditisée, mais la richesse et la véracité des données de fond — CRM, preuves de résultats, réseau — que l'agent peut mobiliser.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       05 · SYNTHÈSE
+       ============================================================ -->
+  <section id="synthese" class="section section--synthese">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <p class="eyebrow">Synthèse — ce qui converge</p>
+        <h2>Trois lentilles, un seul signal</h2>
+        <p class="section-lede">Des idées nées séparément, dans des techniques différentes, pointent vers les mêmes trois décisions. C'est là que la session se referme.</p>
+      </div>
+
+      <!-- Cluster 1 -->
+      <div class="convergence reveal" data-cluster>
+        <p class="convergence-label">Convergence 1 / 3</p>
+        <div class="convergence-stage">
+          <svg class="threads"></svg>
+          <div class="chips-row">
+            <div class="chip" style="--chip-color:var(--amber)"><svg class="icon" width="18" height="18"><use href="#i-mirror"/></svg><div class="chip-text"><b>SCAMPER · Reverse</b><span>Score offre → CV avant de postuler</span></div></div>
+            <div class="chip" style="--chip-color:var(--cyan)"><svg class="icon" width="18" height="18"><use href="#i-fog"/></svg><div class="chip-text"><b>Météo</b><span>Mode brouillard</span></div></div>
+            <div class="chip" style="--chip-color:var(--kraft)"><svg class="icon" width="18" height="18"><use href="#i-magnifier"/></svg><div class="chip-text"><b>Job to be done</b><span>Savoir vite si ça vaut le coup</span></div></div>
+          </div>
+          <div class="result-wrap">
+            <div class="result">
+              <svg class="icon" width="26" height="26"><use href="#i-beacon"/></svg>
+              <h4>Pré-scoring léger avant génération complète</h4>
+              <p>Trois idées nées dans trois techniques différentes convergent sur une seule feature : un score rapide offre/CV, affiché avant de lancer la génération lourde. Elle répond à la fois à la lenteur d'Ollama et à la dispersion d'énergie sur des offres peu prometteuses.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cluster 2 -->
+      <div class="convergence reveal" data-cluster>
+        <p class="convergence-label">Convergence 2 / 3</p>
+        <div class="convergence-stage">
+          <svg class="threads"></svg>
+          <div class="chips-row">
+            <div class="chip" style="--chip-color:var(--amber)"><svg class="icon" width="18" height="18"><use href="#i-link"/></svg><div class="chip-text"><b>SCAMPER · Combine</b><span>MCP LinkedIn (recruteur + entreprise)</span></div></div>
+            <div class="chip" style="--chip-color:var(--amber)"><svg class="icon" width="18" height="18"><use href="#i-mirror"/></svg><div class="chip-text"><b>SCAMPER · Reverse</b><span>Briques d'expérience atomiques</span></div></div>
+            <div class="chip" style="--chip-color:var(--kraft)"><svg class="icon" width="18" height="18"><use href="#i-balance"/></svg><div class="chip-text"><b>Job to be done</b><span>Rester cohérent dans le temps</span></div></div>
+          </div>
+          <div class="result-wrap">
+            <div class="result">
+              <svg class="icon" width="26" height="26"><use href="#i-beacon"/></svg>
+              <h4>Un CV crédible face au profil LinkedIn réel</h4>
+              <p>Le MCP LinkedIn, des briques d'expérience atomiques et une détection d'incohérence forment ensemble un garde-fou : garantir que le CV sur-optimisé pour l'ATS reste crédible face au profil LinkedIn réel du candidat.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cluster 3 -->
+      <div class="convergence reveal" data-cluster>
+        <p class="convergence-label">Convergence 3 / 3 — tension à trancher</p>
+        <div class="convergence-stage">
+          <svg class="threads"></svg>
+          <div class="chips-row">
+            <div class="chip" style="--chip-color:var(--amber)"><svg class="icon" width="18" height="18"><use href="#i-swap"/></svg><div class="chip-text"><b>SCAMPER · Substitute</b><span>Claude API remplace Ollama</span></div></div>
+            <div class="chip" style="--chip-color:var(--violet)"><svg class="icon" width="18" height="18"><use href="#i-orbit"/></svg><div class="chip-text"><b>Horizon · 10 ans</b><span>Richesse/véracité des données CRM</span></div></div>
+          </div>
+          <div class="result-wrap">
+            <div class="result">
+              <svg class="icon" width="26" height="26"><use href="#i-beacon"/></svg>
+              <h4>Correctif immédiat vs actif qui dure</h4>
+              <p>Substituer Ollama par Claude API est un correctif à court terme, utile tout de suite. Mais l'axe à 10 ans dit que le vrai actif durable est la richesse et la véracité des données du CRM — pas la qualité de rédaction, bientôt commoditisée pour tout le monde.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checklist reveal">
+        <div class="checklist-head">
+          <h3>Directions retenues à discuter</h3>
+          <span>Issue de la session — non arbitrées</span>
+        </div>
+        <div class="check-item"><input type="checkbox" id="d1"><label for="d1">Pré-scoring rapide<span>Score offre/CV avant de lancer la génération complète</span></label></div>
+        <div class="check-item"><input type="checkbox" id="d2"><label for="d2">Bascule Claude API<span>Remplacer Ollama pour la vitesse et la qualité de rédaction</span></label></div>
+        <div class="check-item"><input type="checkbox" id="d3"><label for="d3">MCP LinkedIn<span>Pour l'enrichissement du contexte et le contrôle de cohérence</span></label></div>
+        <div class="check-item"><input type="checkbox" id="d4"><label for="d4">Boucle post-entretien<span>Fiche de brief à l'entrée en entretien, puis rétro-apprentissage sur les patterns gagnants</span></label></div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="colophon">
+  <div class="colophon-inner">
+    <p>Radar CV — dossier de session généré à partir de .memlog.md</p>
+    <p>brainstorm-cv-auto-pipeline-2026-08-14 · usage strictement personnel</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* -------- scroll reveal -------- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* -------- mission nav scrollspy -------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll(".missionnav a"));
+  var sections = navLinks.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  function setActive(){
+    var pos = window.scrollY + window.innerHeight * 0.4;
+    var current = 0;
+    sections.forEach(function(sec, i){
+      if(sec && sec.offsetTop <= pos){ current = i; }
+    });
+    navLinks.forEach(function(a, i){ a.classList.toggle("active", i === current); });
+  }
+  window.addEventListener("scroll", setActive, { passive: true });
+  setActive();
+
+  /* -------- synthesis threads -------- */
+  function drawThreads(container){
+    var svg = container.querySelector(".threads");
+    var chips = Array.prototype.slice.call(container.querySelectorAll(".chip"));
+    var result = container.querySelector(".result");
+    if(!svg || !result || chips.length === 0) return;
+
+    var stage = container.querySelector(".convergence-stage");
+    var stageRect = stage.getBoundingClientRect();
+    svg.setAttribute("width", stageRect.width);
+    svg.setAttribute("height", stageRect.height);
+    svg.setAttribute("viewBox", "0 0 " + stageRect.width + " " + stageRect.height);
+    while(svg.firstChild){ svg.removeChild(svg.firstChild); }
+
+    var resultRect = result.getBoundingClientRect();
+    var resX = (resultRect.left - stageRect.left) + resultRect.width / 2;
+    var resY = (resultRect.top - stageRect.top);
+
+    var colors = getComputedStyle(document.documentElement);
+
+    chips.forEach(function(chip){
+      var cRect = chip.getBoundingClientRect();
+      var x1 = (cRect.left - stageRect.left) + cRect.width / 2;
+      var y1 = (cRect.bottom - stageRect.top);
+      var midY = y1 + (resY - y1) * 0.55;
+      var d = "M " + x1 + " " + y1 + " C " + x1 + " " + midY + ", " + resX + " " + midY + ", " + resX + " " + resY;
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      var strokeColor = chip.style.getPropertyValue("--chip-color") || "#f2a341";
+      path.setAttribute("stroke", strokeColor);
+      svg.appendChild(path);
+
+      if(!reduceMotion){
+        var len = path.getTotalLength();
+        path.style.strokeDasharray = len;
+        path.style.strokeDashoffset = len;
+        path.getBoundingClientRect();
+        path.style.transition = "stroke-dashoffset 1.1s ease";
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){ path.style.strokeDashoffset = "0"; });
+        });
+      }
+    });
+  }
+
+  function drawAllThreads(){
+    document.querySelectorAll(".convergence").forEach(function(c){ drawThreads(c); });
+  }
+
+  window.addEventListener("load", drawAllThreads);
+  var resizeTimer;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawAllThreads, 150);
+  });
+
+  if("IntersectionObserver" in window){
+    var threadIO = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ drawThreads(e.target); }
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll(".convergence").forEach(function(c){ threadIO.observe(c); });
+  }
+})();
+</script>
+
+</body>
+</html>
