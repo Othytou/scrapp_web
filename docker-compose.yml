@@ -14,10 +14,11 @@ services:
         - ./api:/app
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - TEMPLATE_PATH=/app/template/template_cv_2.html
+      - TEMPLATE_PATH=/app/template/template_cv_detaille.html
       - OUTPUT_DIR=/app/output
       - PDF_DIR=/app/pdf
       - NGROK_URL=${NGROK_URL}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     # extra_hosts:
     #   - "host.docker.internal:host-gateway"
     depends_on:

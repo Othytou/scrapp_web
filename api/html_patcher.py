@@ -22,11 +22,19 @@ def extract_cv_context(soup: BeautifulSoup) -> dict:
     context = {"skills_pool": {}, "bullets_map": {}}
 
     script_tag = soup.find("script")
-    if script_tag and "CV_SKILLS_POOL" in script_tag.string:
-        logger.info(f"Script tag trouvé, longueur : {len(script_tag.string)}")
+    if script_tag and script_tag.string and "CV_SKILLS_POOL" in script_tag.string:
         match = re.search(r"window\.CV_SKILLS_POOL\s*=\s*(\{.*\})\s*;", script_tag.string, re.DOTALL)
         if not match:
-            logger.warning(f"Regex no match — extrait : {script_tag.string[:200]}")
+            logger.warning(f"CV_SKILLS_POOL non trouvé — extrait : {script_tag.string[:200]}")
+        else:
+            raw = match.group(1)
+            # Les clés de premier niveau (displayed/hidden/labels) ne sont pas
+            # quotées en JS — on les quote pour obtenir du JSON valide.
+            raw = re.sub(r'(?<=[{,\s])(displayed|hidden|labels)\s*:', r'"\1":', raw)
+            try:
+                context["skills_pool"] = json.loads(raw)
+            except json.JSONDecodeError as e:
+                logger.warning(f"CV_SKILLS_POOL trouvé mais non parsable : {e}")
 
     for ul in soup.find_all("ul", class_="entry-bullets"):
         ul_id = ul.get("id", "")
@@ -106,11 +114,13 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
     logger.info(f"Compétences highlightées : {highlighted_normalized}")
 
     # 5. Inject skills
-    inject_map = patch.get("inject_skills", {})
+    inject_entries = patch.get("inject_skills", [])
     labels = cv_context.get("skills_pool", {}).get("labels", {})
     injected = []
 
-    for container_id, skills in inject_map.items():
+    for entry in inject_entries:
+        container_id = entry.get("container_id")
+        skills = entry.get("skills", [])
         container = soup.find(id=container_id)
         if not container:
             logger.warning(f"Conteneur '{container_id}' introuvable pour injection")

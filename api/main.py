@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, HTTPException
@@ -9,15 +8,7 @@ from sqlalchemy import select
 
 from database import init_db, get_db
 from models import Application, ApplicationEvent
-from agent import run_agent
-from html_patcher import load_template, extract_cv_context, apply_patch, write_output
-from utils import build_output_filename, logger
-
-# ── Config ────────────────────────────────────────────────────────────────────
-
-TEMPLATE_PATH = os.getenv("TEMPLATE_PATH", "./template/template_cv_2.html")
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "./output")
-PDF_DIR = os.getenv("PDF_DIR", "./pdf")
+from utils import logger
 
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
@@ -64,58 +55,28 @@ class StatusUpdate(BaseModel):
 async def handle_webhook(payload: WebhookPayload, db: AsyncSession = Depends(get_db)):
     """
     Point d'entrée principal.
-    Reçoit l'offre depuis l'extension Chrome, lance l'agent et génère le CV HTML.
+    Reçoit l'offre depuis l'extension Chrome et l'enregistre (statut "captured").
+    La génération du CV est faite séparément par le skill Claude Code
+    (voir .claude/skills/generate-cv) — pas d'appel LLM ici.
     """
-    logger.info(f"Webhook reçu — {payload.company} / {payload.position}")
+    logger.info(f"Offre capturée — {payload.company} / {payload.position}")
 
-    # 1. Charge le template et extrait le contexte
-    soup = load_template(TEMPLATE_PATH)
-    cv_context = extract_cv_context(soup)
-
-    # 2. Lance l'agent Claude
-    try:
-        patch = run_agent(payload.model_dump(), cv_context)
-    except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    # 3. Applique le patch sur le HTML
-    patched_soup = apply_patch(soup, patch, cv_context)
-
-    # 4. Écrit le fichier output
-    filename = build_output_filename(payload.company, payload.position)
-    output_path = os.path.join(OUTPUT_DIR, filename)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    write_output(patched_soup, output_path)
-
-    # 5. Sauvegarde en DB
     application = Application(
         company=payload.company,
         position=payload.position,
         url=payload.url,
         job_offer=payload.job_offer,
-        cv_html_path=output_path,
-        highlight_skills=patch.get("highlight_skills", []),
-        inject_skills=patch.get("inject_skills", {}),
-        unmatched_skills=patch.get("unmatched_skills", []),
-        status="generated"
+        status="captured",
     )
     db.add(application)
     await db.commit()
     await db.refresh(application)
 
-    pdf_path = await generate_pdf(output_path, PDF_DIR, filename)
-    application.pdf_path = pdf_path
-    await db.commit()
-
-    logger.info(f"Application #{application.id} créée — {filename}")
+    logger.info(f"Application #{application.id} enregistrée — en attente de génération")
 
     return {
         "status": "ok",
         "application_id": application.id,
-        "cv_file": filename,
-        "highlight_skills": patch.get("highlight_skills", []),
-        "inject_skills": patch.get("inject_skills", {}),
-        "unmatched_skills": patch.get("unmatched_skills", []),
     }
 
 
@@ -181,19 +142,4 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
             / total * 100, 1
         ) if total > 0 else 0
     }
-
-
-# ── PDF generation —  ─────────────────────────────────────────────────────────
-
-async def generate_pdf(html_path: str, pdf_dir: str, filename: str) -> str:
-    from weasyprint import HTML
-    import os
-
-    os.makedirs(pdf_dir, exist_ok=True)
-    pdf_filename = filename.replace(".html", ".pdf")
-    pdf_path = os.path.join(pdf_dir, pdf_filename)
-
-    HTML(filename=html_path).write_pdf(pdf_path)
-    logger.info(f"PDF généré : {pdf_path}")
-    return pdf_path
 

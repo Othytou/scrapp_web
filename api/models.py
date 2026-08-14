@@ -27,8 +27,8 @@ class Application(Base):
     # Statut candidature
     status: Mapped[str] = mapped_column(
         String(50),
-        default="generated"
-        # generated → sent → no_response / positive / negative / interview
+        default="captured"
+        # captured → generated → sent → no_response / positive / negative / interview
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

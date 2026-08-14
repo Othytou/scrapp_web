@@ -40,7 +40,8 @@ function copyJobContent() {
 		'HelloWork': '', // À compléter
 		'Free-Work': {
 			header: 'header.bg-primary',
-			description: '.html-renderer.prose-content'  // multiple blocs à concaténer
+			description: '.html-renderer.prose-content',  // multiple blocs à concaténer
+			tags: 'div[slot="subtitle"] a.tag'
 		}
 
 	};
@@ -79,7 +80,19 @@ function copyJobContent() {
 	const descriptionElements = document.querySelectorAll(selectors.description);
 	if (!descriptionElements || descriptionElements.length === 0) return;
 
-	const jobOfferText = Array.from(descriptionElements)
+	// Tags de compétences structurés (ex: encadré Free-Work en haut de l'offre)
+	let tagsLine = '';
+	if (selectors.tags) {
+		const tagElements = document.querySelectorAll(selectors.tags);
+		const tags = Array.from(tagElements)
+			.map(el => el.innerText.trim())
+			.filter(Boolean);
+		if (tags.length > 0) {
+			tagsLine = `Compétences taguées par le site : ${tags.join(', ')}\n\n`;
+		}
+	}
+
+	const jobOfferText = tagsLine + Array.from(descriptionElements)
 		.map(el => el.innerText.trim())
 		.join('\n\n');
 

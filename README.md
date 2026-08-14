@@ -7,7 +7,7 @@ A Chrome/Brave extension combined with a local AI agent to copy job offers and a
 ## 🆕 Changelog
 
 ### v1.2.5
-- Local AI agent (Ollama/Qwen) for automatic CV adaptation
+- Claude Sonnet 5 agent for automatic CV adaptation (structured outputs + prompt caching)
 - HTML CV generation per offer (`cv_{company}_{position}.html`)
 - Matched skills highlighting in CV
 - Hidden skills injection from pool
@@ -36,7 +36,7 @@ A Chrome/Brave extension combined with a local AI agent to copy job offers and a
 - ✅ **Keyboard shortcut** (`Ctrl+Shift+M` / `Cmd+Shift+M` on Mac)
 - ✅ **Visual copy button** on supported pages
 - ✅ **Structured JSON payload** sent to local webhook
-- ✅ **AI agent** — adapts CV HTML to job offer via Ollama/Qwen
+- ✅ **AI agent** — adapts CV HTML to job offer via Claude Sonnet 5
 - ✅ **ATS optimization** — exact keywords from offer injected in CV
 - ✅ **Skills highlighting** — matched skills visually highlighted
 - ✅ **Hidden skills injection** — skills from pool injected if requested
@@ -84,7 +84,7 @@ A Chrome/Brave extension combined with a local AI agent to copy job offers and a
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   ├── main.py                       # FastAPI routes + webhook
-│   ├── agent.py                      # Ollama/Qwen API call
+│   ├── agent.py                      # Claude API call
 │   ├── html_patcher.py               # HTML patching via BeautifulSoup
 │   ├── utils.py                      # Slugify + logger
 │   ├── models.py                     # SQLAlchemy models
@@ -109,24 +109,17 @@ A Chrome/Brave extension combined with a local AI agent to copy job offers and a
 ### Prerequisites
 
 - Docker + Docker Compose
-- Ollama installed locally with Qwen model
+- An Anthropic API key
 - Chrome or Brave browser
 
-### 1. Start Ollama
-
-```bash
-ollama pull qwen2.5:9b
-ollama serve
-```
-
-### 2. Configure environment
+### 1. Configure environment
 
 ```bash
 cp .env.example .env
-# Edit .env — no API key needed, Ollama runs locally
+# Edit .env — set ANTHROPIC_API_KEY to your key
 ```
 
-### 3. Start Docker services
+### 2. Start Docker services
 
 ```bash
 docker compose up --build
@@ -136,7 +129,7 @@ Services available:
 - API: `http://localhost:9000`
 - pgAdmin: `http://localhost:5050`
 
-### 4. Load the extension
+### 3. Load the extension
 
 1. Open `brave://extensions/` or `chrome://extensions/`
 2. Enable **Developer mode**
@@ -183,9 +176,9 @@ Services available:
 
 **Extension:** JavaScript, Chrome Manifest V3, MutationObserver, Clipboard API
 
-**Backend:** FastAPI, SQLAlchemy, PostgreSQL, Alembic, BeautifulSoup4, httpx
+**Backend:** FastAPI, SQLAlchemy, PostgreSQL, Alembic, BeautifulSoup4
 
-**AI:** Ollama, Qwen 2.5
+**AI:** Claude Sonnet 5 (Anthropic API)
 
 **PDF:** WeasyPrint
 

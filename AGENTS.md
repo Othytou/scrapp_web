@@ -11,7 +11,7 @@ Pipeline personnel de candidature : une extension Chrome copie une offre d'emplo
 - Ne jamais `git commit` ni `git push` (local ou prod) — l'utilisateur s'en charge exclusivement. Lire l'historique/les logs est permis.
 - Ne jamais committer de CV avec de vraies données personnelles (`output/*.html`, `pdf/*.pdf`, `template/template_cv_2.html` — déjà exclus via `.gitignore`). Tout nouveau modèle de CV doit être accompagné d'une version template générique committable ("Votre nom", "Votre poste"...).
 - TDD préféré dès que possible pour les nouveaux développements.
-- Après chaque fonctionnalité développée, vérifier dans Chrome via le MCP chrome-devtools plutôt que de supposer que ça marche.
+- Après chaque fonctionnalité développée, vérifier plutôt que de supposer que ça marche — mais **le MCP chrome-devtools ne charge pas l'extension** (l'instance Chrome pilotée par MCP refuse les extensions, testé et confirmé le 2026-08-14). L'utilisateur teste l'extension lui-même dans son navigateur habituel ; côté agent, vérifier le backend directement (curl/scripts contre l'API, tests pytest) plutôt que de retenter le chargement via MCP.
 
 ## Where things are
 
