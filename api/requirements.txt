@@ -8,6 +8,7 @@ beautifulsoup4==4.14.3
 brotli==1.2.0
 certifi==2026.2.25
 cffi==2.0.0
+charset-normalizer==3.4.7
 click==8.3.2
 cssselect2==0.9.0
 fastapi==0.135.3
@@ -32,6 +33,7 @@ pyee==13.0.1
 pyphen==0.17.2
 python-dotenv==1.2.2
 PyYAML==6.0.3
+requests==2.34.2
 soupsieve==2.8.3
 SQLAlchemy==2.0.49
 starlette==1.0.0
