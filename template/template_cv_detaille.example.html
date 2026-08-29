@@ -7,411 +7,7 @@
 	<title>Votre Nom — CV Détaillé</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-	<style>
-		*,
-		*::before,
-		*::after {
-			box-sizing: border-box;
-			margin: 0;
-			padding: 0;
-		}
-
-		:root {
-			--ink: #1a1a18;
-			--ink-mid: #3d3d3a;
-			--ink-muted: #7a7a74;
-			--accent: #1a3a2a;
-			--accent-light: #e8f0eb;
-			--rule: #d0d0c8;
-			--page: #fafaf8;
-			--col-left: 220px;
-			--gap: 32px;
-		}
-
-		html {
-			font-size: 14px;
-		}
-
-		body {
-			font-family: 'DM Sans', sans-serif;
-			background: #e8e8e2;
-			color: var(--ink);
-			-webkit-print-color-adjust: exact;
-			print-color-adjust: exact;
-		}
-
-		.page {
-			width: 210mm;
-			min-height: 297mm;
-			margin: 24px auto;
-			background: var(--page);
-			padding: 14mm 14mm 14mm 14mm;
-			position: relative;
-		}
-
-		/* ── HEADER ─────────────────────────────── */
-		.header {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			align-items: end;
-			gap: 24px;
-			padding-bottom: 18px;
-			border-bottom: 2px solid var(--ink);
-			margin-bottom: 24px;
-		}
-
-		.header-name {
-			font-family: 'DM Serif Display', serif;
-			font-size: 2.6rem;
-			line-height: 1;
-			letter-spacing: -0.02em;
-			color: var(--ink);
-		}
-
-		.header-title {
-			font-size: 0.85rem;
-			font-weight: 300;
-			color: var(--ink-mid);
-			letter-spacing: 0.08em;
-			text-transform: uppercase;
-			margin-top: 6px;
-		}
-
-		.header-contact {
-			text-align: right;
-			font-size: 0.78rem;
-			color: var(--ink-mid);
-			line-height: 1.9;
-		}
-
-		.header-contact a {
-			color: var(--ink-mid);
-			text-decoration: none;
-		}
-
-		/* ── BODY LAYOUT ─────────────────────────── */
-		.body {
-			display: grid;
-			grid-template-columns: var(--col-left) 1fr;
-			gap: 0 var(--gap);
-		}
-
-		/* ── LEFT COLUMN ─────────────────────────── */
-		.sidebar-section {
-			margin-bottom: 22px;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.sidebar-label {
-			font-size: 0.65rem;
-			font-weight: 500;
-			letter-spacing: 0.14em;
-			text-transform: uppercase;
-			color: var(--ink-muted);
-			margin-bottom: 10px;
-			padding-bottom: 5px;
-			border-bottom: 0.5px solid var(--rule);
-		}
-
-		.skill-group {
-			margin-bottom: 12px;
-		}
-
-		.skill-group-title {
-			font-size: 0.72rem;
-			font-weight: 500;
-			color: var(--ink-mid);
-			margin-bottom: 5px;
-		}
-
-		.skill-tags {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 4px;
-		}
-
-		.tag {
-			display: inline-block;
-			font-size: 0.68rem;
-			background: var(--accent-light);
-			color: var(--accent);
-			padding: 2px 7px;
-			border-radius: 2px;
-			font-weight: 400;
-		}
-
-		.lang-item {
-			display: flex;
-			justify-content: space-between;
-			align-items: baseline;
-			font-size: 0.75rem;
-			margin-bottom: 5px;
-			color: var(--ink-mid);
-		}
-
-		.lang-name {
-			font-weight: 500;
-			color: var(--ink);
-		}
-
-		.lang-level {
-			font-size: 0.68rem;
-			color: var(--ink-muted);
-		}
-
-		.text-list {
-			list-style: none;
-			font-size: 0.75rem;
-			color: var(--ink-mid);
-			line-height: 1.8;
-		}
-
-		.text-list li::before {
-			content: '—';
-			margin-right: 5px;
-			color: var(--rule);
-		}
-
-		/* ── RIGHT COLUMN ─────────────────────────── */
-		.summary {
-			font-size: 0.82rem;
-			line-height: 1.7;
-			color: var(--ink-mid);
-			margin-bottom: 22px;
-			padding-left: 12px;
-			border-left: 2px solid var(--accent);
-			font-weight: 300;
-		}
-
-		.section {
-			margin-top: 20px;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.section-title {
-			font-size: 0.65rem;
-			font-weight: 500;
-			letter-spacing: 0.14em;
-			text-transform: uppercase;
-			color: var(--ink-muted);
-			margin-bottom: 12px;
-			padding-bottom: 5px;
-			border-bottom: 0.5px solid var(--rule);
-		}
-
-		.entry {
-			display: grid;
-			grid-template-columns: 100px 1fr;
-			gap: 0 14px;
-			margin-bottom: 10px;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.entry:last-child {
-			margin-bottom: 0;
-		}
-
-		.entry-meta {
-			padding-top: 1px;
-		}
-
-		.entry-period {
-			font-size: 0.68rem;
-			color: var(--ink-muted);
-			line-height: 1.5;
-			font-style: italic;
-		}
-
-		.entry-company {
-			font-size: 0.7rem;
-			font-weight: 500;
-			color: var(--accent);
-			margin-top: 3px;
-		}
-
-		.entry-location {
-			font-size: 0.65rem;
-			color: var(--ink-muted);
-			margin-top: 1px;
-		}
-
-		.entry-title {
-			font-family: 'DM Serif Display', serif;
-			font-size: 0.95rem;
-			color: var(--ink);
-			margin-bottom: 5px;
-			line-height: 1.2;
-		}
-
-		.entry-bullets {
-			list-style: none;
-			font-size: 0.75rem;
-			color: var(--ink-mid);
-			line-height: 1.65;
-		}
-
-		.entry-bullets li {
-			display: flex;
-			gap: 6px;
-			margin-bottom: 2px;
-		}
-
-		.entry-bullets li::before {
-			content: '·';
-			color: var(--accent);
-			font-size: 1rem;
-			line-height: 1.4;
-			flex-shrink: 0;
-		}
-
-		/* Education */
-		.edu-entry {
-			display: grid;
-			grid-template-columns: 100px 1fr;
-			gap: 0 14px;
-			margin-bottom: 10px;
-			font-size: 0.75rem;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.edu-period {
-			color: var(--ink-muted);
-			font-style: italic;
-			font-size: 0.68rem;
-			padding-top: 1px;
-		}
-
-		.edu-degree {
-			font-weight: 500;
-			color: var(--ink);
-			margin-bottom: 1px;
-		}
-
-		.edu-school {
-			color: var(--ink-muted);
-			font-size: 0.7rem;
-		}
-
-		/* ── MISSIONS (FULL WIDTH) ─────────────────────────── */
-		.missions {
-			margin-top: 28px;
-			padding-top: 22px;
-			/* border-top: 2px solid var(--ink); */
-		}
-
-		.missions-intro {
-			font-size: 0.78rem;
-			color: var(--ink-mid);
-			font-weight: 300;
-			line-height: 1.6;
-			margin-bottom: 20px;
-			max-width: 640px;
-		}
-
-		.mission-block {
-			margin-bottom: 22px;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.mission-block:last-child {
-			margin-bottom: 0;
-		}
-
-		.mission-header {
-			display: flex;
-			align-items: baseline;
-			gap: 10px;
-			margin-bottom: 10px;
-			padding-bottom: 6px;
-			border-bottom: 1px solid var(--rule);
-		}
-
-		.mission-domain {
-			font-family: 'DM Serif Display', serif;
-			font-size: 1.15rem;
-			color: var(--ink);
-		}
-
-		.mission-domain-sub {
-			font-size: 0.68rem;
-			color: var(--ink-muted);
-			letter-spacing: 0.06em;
-			text-transform: uppercase;
-		}
-
-		.mission-columns {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 0 28px;
-		}
-
-		.mission-columns.single {
-			grid-template-columns: 1fr;
-		}
-
-		.mission-item {
-			margin-bottom: 14px;
-			break-inside: avoid;
-			page-break-inside: avoid;
-		}
-
-		.mission-item:last-child {
-			margin-bottom: 0;
-		}
-
-		.mission-title {
-			font-size: 0.78rem;
-			font-weight: 500;
-			color: var(--accent);
-			margin-bottom: 6px;
-			line-height: 1.35;
-		}
-
-		.mission-bullets {
-			list-style: none;
-			font-size: 0.75rem;
-			color: var(--ink-mid);
-			line-height: 1.6;
-		}
-
-		.mission-bullets li {
-			display: flex;
-			gap: 6px;
-			margin-bottom: 3px;
-		}
-
-		.mission-bullets li::before {
-			content: '·';
-			color: var(--accent);
-			font-size: 1rem;
-			line-height: 1.4;
-			flex-shrink: 0;
-		}
-
-		/* ── PRINT ───────────────────────────────── */
-		@media print {
-			body {
-				background: white;
-			}
-
-			.page {
-				margin: 0;
-				box-shadow: none;
-				width: 210mm;
-				min-height: 297mm;
-			}
-		}
-
-		@page {
-			size: A4;
-			margin: 10px 0;
-		}
-	</style>
+	<link rel="stylesheet" href="../template/cv_detaille.css">
 </head>
 
 <body>
@@ -611,10 +207,14 @@
 						<div class="entry-body">
 							<div class="entry-title" id="exp-0-title">Freelance · Développeur Full-Stack & DevOps</div>
 							<ul class="entry-bullets" id="exp-0-bullets">
-								<li data-keywords="python,django,nextjs,api-rest,scalabilite">Conception et développement d'applications Python/Django et Next.js robustes et scalables — API REST performantes et sécurisées</li>
-								<li data-keywords="cisco,fortinet,jinja2,ansible,automatisation-reseau">Automatisation réseau — sauvegarde et déploiement de configurations Cisco/Fortinet, génération de templates Jinja2, outils d'inventaire</li>
-								<li data-keywords="n8n,webhooks,automation,integrations">Automatisation de processus métiers et techniques via n8n (webhooks, intégrations multi-services)</li>
-								<li data-keywords="cicd,jenkins,vps,cloud,docker,kubernetes,orchestration">Pipelines CI/CD Jenkins, déploiement VPS/Cloud, conteneurisation Docker, orchestration Kubernetes</li>
+								<li data-keywords="python,django,nextjs,api-rest,scalabilite">Conception et développement d'applications Python/Django et Next.js robustes et
+									scalables — API REST performantes et sécurisées</li>
+								<li data-keywords="cisco,fortinet,jinja2,ansible,automatisation-reseau">Automatisation réseau — sauvegarde et déploiement de configurations
+									Cisco/Fortinet, génération de templates Jinja2, outils d'inventaire</li>
+								<li data-keywords="n8n,webhooks,automation,integrations">Automatisation de processus métiers et techniques via n8n (webhooks, intégrations
+									multi-services)</li>
+								<li data-keywords="cicd,jenkins,vps,cloud,docker,kubernetes,orchestration">Pipelines CI/CD Jenkins, déploiement VPS/Cloud, conteneurisation Docker,
+									orchestration Kubernetes</li>
 								<li data-keywords="grafana,prometheus,terraform,iac,monitoring">Monitoring Grafana + Prometheus, IaC Terraform</li>
 							</ul>
 						</div>
@@ -628,9 +228,11 @@
 						<div class="entry-body">
 							<div class="entry-title" id="exp-1-title">Alternant · Développeur Python & DevOps</div>
 							<ul class="entry-bullets" id="exp-1-bullets">
-								<li data-keywords="python,django,agile,api-rest,postgresql,data-collection,multisource">Développement Python (Django) en environnement agile — APIs REST, PostgreSQL, collecte et intégration de données multisources</li>
+								<li data-keywords="python,django,agile,api-rest,postgresql,data-collection,multisource">Développement Python (Django) en environnement agile — APIs
+									REST, PostgreSQL, collecte et intégration de données multisources</li>
 								<li data-keywords="performance,code-review">Optimisation des performances applicatives et participation aux revues de code</li>
-								<li data-keywords="docker,kubernetes,cicd,devops,collaboration">Collaboration étroite avec les équipes DevOps (Docker, Kubernetes, CI/CD) et produit</li>
+								<li data-keywords="docker,kubernetes,cicd,devops,collaboration">Collaboration étroite avec les équipes DevOps (Docker, Kubernetes, CI/CD) et produit
+								</li>
 								<li data-keywords="devsecops,vuln-mgmt,dast-sast,rgpd">DevSecOps — analyse de vulnérabilités, DAST/SAST, conformité RGPD</li>
 							</ul>
 						</div>
@@ -659,7 +261,8 @@
 						<div class="entry-body">
 							<div class="entry-title" id="exp-3-title">Alternant · Développeur Python Web</div>
 							<ul class="entry-bullets" id="exp-3-bullets">
-								<li data-keywords="python,django,api-rest,auth,postgresql,mailing,securite">Architecture et développement Python (Django) — APIs REST, authentification, PostgreSQL, mass mailing, sécurité</li>
+								<li data-keywords="python,django,api-rest,auth,postgresql,mailing,securite">Architecture et développement Python (Django) — APIs REST,
+									authentification, PostgreSQL, mass mailing, sécurité</li>
 								<li data-keywords="documentation,qualite">Documentation technique des développements et suivi qualité</li>
 								<li data-keywords="docker,devops,monitoring,maintenance,deployment">DevOps Docker, déploiement, monitoring, maintenance applicative</li>
 							</ul>
@@ -675,7 +278,8 @@
 						<div class="entry-body">
 							<div class="entry-title" id="exp-4-title">Stagiaire · Développeur WordPress</div>
 							<ul class="entry-bullets" id="exp-4-bullets">
-								<li data-keywords="wordpress,mysql,seo,sea,photoshop,illustrator,graphisme">Sites WordPress, BDD MySQL, SEO/SEA, charte graphique (Photoshop, Illustrator)</li>
+								<li data-keywords="wordpress,mysql,seo,sea,photoshop,illustrator,graphisme">Sites WordPress, BDD MySQL, SEO/SEA, charte graphique (Photoshop,
+									Illustrator)</li>
 								<li data-keywords="php,plugin,wordpress,custom">Développement d'un plugin PHP sur mesure</li>
 							</ul>
 						</div>
@@ -925,29 +529,112 @@
 				"linux", "reseau"
 			],
 			hidden: [
-				"redux", "react-router", "react-query", "zustand", "tailwind", "scss",
-				"fastapi", "celery", "sqlalchemy", "alembic",
-				"supabase", "firebase", "mysql", "mongodb", "redis",
-				"nginx", "traefik", "caddy",
-				"sonarqube", "trivy", "snyk", "dependabot",
-				"playwright", "cypress", "selenium",
-				"figma", "photoshop", "illustrator",
-				"agile", "scrum", "jira", "notion",
-				"discord-bot", "tiktok-api", "instagram-api"
+				"fastapi", "flask", "responsive-design", "pwa", "accessibilite",
+				"openapi-swagger", "oauth2", "jwt", "websocket",
+				"sql-server", "mysql", "mongodb", "redis",
+				"awx", "virtual-wan", "azure", "azure-firewall",
+				"jupyter", "airflow", "data-cleaning", "data-transformation", "data-modeling",
+				"data-visualization", "reporting", "kpi-metrics", "ab-testing", "scipy", "tensorflow",
+				"matplotlib", "seaborn", "machine-learning", "deep-learning", "nlp", "computer-vision",
+				"feature-engineering", "feature-selection", "model-evaluation",
+				"hyperparameter-optimization", "cross-validation", "classification", "regression",
+				"clustering", "time-series", "statistical-modeling", "dbt",
+				"architecture-monolithique", "design-patterns", "solid", "clean-architecture", "ddd",
+				"event-driven-architecture", "async-programming",
+				"gitops", "s3", "ec2", "eks", "rds", "vpc", "iam", "elb-alb", "azure-vms", "aks",
+				"azure-devops", "azure-storage", "azure-sql", "azure-vnet",
+				"loki", "datadog", "zabbix", "azure-monitor",
+				"sca", "secret-scanning", "container-scanning", "iac-scanning", "dependency-scanning",
+				"security-gate", "sbom", "supply-chain-security", "trivy", "gitleaks", "owasp-zap",
+				"dependency-check", "checkov", "falco", "secrets-management", "key-vault",
+				"security-groups", "network-policies",
+				"gitversion", "phpunit", "tests-unitaires", "tests-integration", "tests-e2e", "linting",
+				"formatting", "sonarqube", "playwright", "cypress", "selenium", "agile", "scrum",
+				"windows-server", "unix", "bash", "powershell",
+				"ssh", "dns", "dhcp", "tcp-ip", "http-https", "vpn", "load-balancing", "reverse-proxy",
+				"nginx", "firewall", "vlan", "routing",
+				"osint", "passive-recon", "active-recon", "attack-surface-discovery", "subdomain-enum",
+				"dns-enum", "network-enum", "burp-suite", "sql-injection", "xss", "csrf", "ssrf", "ssti",
+				"xxe", "idor", "path-traversal", "file-upload-vuln", "command-injection", "auth-bypass",
+				"jwt-attacks", "oauth-security", "api-pentesting", "ad-security", "privilege-escalation",
+				"metasploit", "nmap", "sqlmap", "ffuf", "gobuster", "hashcat", "john-the-ripper",
+				"exploit-development", "shellcode", "buffer-overflow", "siem", "security-monitoring",
+				"alert-triage", "root-cause-analysis", "malware-analysis", "wazuh", "elastic-security",
+				"suricata", "zeek", "ghidra", "rsa", "aes", "hmac", "vulnerability-assessment", "cve-cvss",
+				"security-audit", "configuration-audit", "nist", "anssi"
 			],
 			labels: {
-				"redux": "Redux", "react-router": "React Router", "react-query": "React Query",
-				"zustand": "Zustand", "tailwind": "Tailwind CSS", "scss": "SCSS",
-				"fastapi": "FastAPI", "celery": "Celery", "sqlalchemy": "SQLAlchemy",
-				"alembic": "Alembic", "supabase": "Supabase", "firebase": "Firebase",
-				"mysql": "MySQL", "mongodb": "MongoDB",
-				"redis": "Redis", "nginx": "Nginx", "traefik": "Traefik", "caddy": "Caddy",
-				"sonarqube": "SonarQube", "trivy": "Trivy", "snyk": "Snyk",
-				"dependabot": "Dependabot", "playwright": "Playwright", "cypress": "Cypress",
-				"selenium": "Selenium", "figma": "Figma", "photoshop": "Photoshop",
-				"jira": "Jira", "notion": "Notion", "discord-bot": "Discord Bot",
-				"illustrator": "Illustrator", "agile": "Agile", "scrum": "Scrum",
-				"tiktok-api": "TikTok API", "instagram-api": "Instagram API"
+				"fastapi": "FastAPI", "flask": "Flask", "responsive-design": "Responsive Design",
+				"pwa": "PWA", "accessibilite": "Accessibilité",
+				"openapi-swagger": "OpenAPI / Swagger", "oauth2": "OAuth 2.0", "jwt": "JWT",
+				"websocket": "WebSocket",
+				"sql-server": "SQL Server", "mysql": "MySQL", "mongodb": "MongoDB", "redis": "Redis",
+				"awx": "AWX", "virtual-wan": "Virtual WAN", "azure": "Azure",
+				"azure-firewall": "Azure Firewall",
+				"jupyter": "Jupyter", "airflow": "Airflow", "data-cleaning": "Data Cleaning",
+				"data-transformation": "Data Transformation", "data-modeling": "Data Modeling",
+				"data-visualization": "Data Visualization", "reporting": "Reporting",
+				"kpi-metrics": "KPI / Metrics", "ab-testing": "A/B Testing", "scipy": "SciPy",
+				"tensorflow": "TensorFlow", "matplotlib": "Matplotlib", "seaborn": "Seaborn",
+				"machine-learning": "Machine Learning", "deep-learning": "Deep Learning", "nlp": "NLP",
+				"computer-vision": "Computer Vision", "feature-engineering": "Feature Engineering",
+				"feature-selection": "Feature Selection", "model-evaluation": "Model Evaluation",
+				"hyperparameter-optimization": "Hyperparameter Optimization",
+				"cross-validation": "Cross-validation", "classification": "Classification",
+				"regression": "Regression", "clustering": "Clustering", "time-series": "Time Series",
+				"statistical-modeling": "Statistical Modeling", "dbt": "dbt",
+				"architecture-monolithique": "Architecture monolithique",
+				"design-patterns": "Design Patterns", "solid": "SOLID",
+				"clean-architecture": "Clean Architecture", "ddd": "Domain-Driven Design (DDD)",
+				"event-driven-architecture": "Event-driven architecture",
+				"async-programming": "Asynchronous programming",
+				"gitops": "GitOps", "s3": "AWS S3", "ec2": "AWS EC2", "eks": "AWS EKS", "rds": "AWS RDS",
+				"vpc": "AWS VPC", "iam": "AWS IAM", "elb-alb": "ELB / ALB", "azure-vms": "Azure VMs",
+				"aks": "Azure AKS", "azure-devops": "Azure DevOps", "azure-storage": "Azure Storage",
+				"azure-sql": "Azure SQL", "azure-vnet": "Virtual Network (Azure)",
+				"loki": "Loki", "datadog": "Datadog", "zabbix": "Zabbix", "azure-monitor": "Azure Monitor",
+				"sca": "SCA", "secret-scanning": "Secret Scanning",
+				"container-scanning": "Container Scanning", "iac-scanning": "IaC Scanning",
+				"dependency-scanning": "Dependency Scanning", "security-gate": "Security Gate",
+				"sbom": "SBOM", "supply-chain-security": "Supply Chain Security", "trivy": "Trivy",
+				"gitleaks": "GitLeaks", "owasp-zap": "OWASP ZAP", "dependency-check": "Dependency-Check",
+				"checkov": "Checkov", "falco": "Falco", "secrets-management": "Gestion des secrets",
+				"key-vault": "Key Vault", "security-groups": "Security Groups",
+				"network-policies": "Network Policies",
+				"gitversion": "GitVersion", "phpunit": "PHPUnit", "tests-unitaires": "Tests unitaires",
+				"tests-integration": "Tests d'intégration", "tests-e2e": "Tests fonctionnels / E2E",
+				"linting": "Linting", "formatting": "Formatting", "sonarqube": "SonarQube",
+				"playwright": "Playwright", "cypress": "Cypress", "selenium": "Selenium",
+				"agile": "Agile", "scrum": "Scrum",
+				"windows-server": "Windows Server", "unix": "Unix", "bash": "Bash",
+				"powershell": "PowerShell",
+				"ssh": "SSH", "dns": "DNS", "dhcp": "DHCP", "tcp-ip": "TCP/IP",
+				"http-https": "HTTP/HTTPS", "vpn": "VPN", "load-balancing": "Load Balancing",
+				"reverse-proxy": "Reverse Proxy", "nginx": "Nginx", "firewall": "Firewall",
+				"vlan": "VLAN", "routing": "Routing",
+				"osint": "OSINT", "passive-recon": "Passive Reconnaissance",
+				"active-recon": "Active Reconnaissance",
+				"attack-surface-discovery": "Attack Surface Discovery",
+				"subdomain-enum": "Subdomain Enumeration", "dns-enum": "DNS Enumeration",
+				"network-enum": "Network Enumeration", "burp-suite": "Burp Suite",
+				"sql-injection": "SQL Injection", "xss": "XSS", "csrf": "CSRF", "ssrf": "SSRF",
+				"ssti": "SSTI", "xxe": "XXE", "idor": "IDOR", "path-traversal": "Path Traversal",
+				"file-upload-vuln": "File Upload Vulnerabilities",
+				"command-injection": "Command Injection", "auth-bypass": "Authentication Bypass",
+				"jwt-attacks": "JWT Attacks", "oauth-security": "OAuth Security",
+				"api-pentesting": "API Pentesting", "ad-security": "Active Directory Security",
+				"privilege-escalation": "Privilege Escalation", "metasploit": "Metasploit",
+				"nmap": "Nmap", "sqlmap": "SQLmap", "ffuf": "ffuf", "gobuster": "Gobuster",
+				"hashcat": "Hashcat", "john-the-ripper": "John the Ripper",
+				"exploit-development": "Exploit Development", "shellcode": "Shellcode",
+				"buffer-overflow": "Buffer Overflow", "siem": "SIEM",
+				"security-monitoring": "Security Monitoring", "alert-triage": "Alert Triage",
+				"root-cause-analysis": "Root Cause Analysis", "malware-analysis": "Malware Analysis",
+				"wazuh": "Wazuh", "elastic-security": "Elastic Security", "suricata": "Suricata",
+				"zeek": "Zeek", "ghidra": "Ghidra", "rsa": "RSA", "aes": "AES", "hmac": "HMAC",
+				"vulnerability-assessment": "Vulnerability Assessment", "cve-cvss": "CVE / CVSS",
+				"security-audit": "Security Audit", "configuration-audit": "Configuration Audit",
+				"nist": "NIST", "anssi": "ANSSI"
 			}
 		};
 	</script>
