@@ -14,5 +14,5 @@ async def generate_pdf(html_path: str, pdf_dir: str, filename: str) -> str:
     return pdf_path
 
 
-# asyncio.run(generate_pdf("./template/template_cv_2.html", "./pdf", "template.pdf"))
+# asyncio.run(generate_pdf("./template/my_template_cv_2.html", "./pdf", "template.pdf"))
 asyncio.run(generate_pdf("./output/cv_gfc-provap_developpeur-h-f.html", "./pdf", "cv2.pdf"))

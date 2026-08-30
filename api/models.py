@@ -19,6 +19,10 @@ class Application(Base):
     cv_html_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
     pdf_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
+    # CV court (generate-cv) — chemins séparés du CV détaillé (generate-detailled-cv)
+    cv_html_path_court: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    pdf_path_court: Mapped[str | None] = mapped_column(String(512), nullable=True)
+
     # Résultat de l'analyse agent
     highlight_skills: Mapped[list | None] = mapped_column(JSON, nullable=True)
     inject_skills: Mapped[dict | None] = mapped_column(JSON, nullable=True)

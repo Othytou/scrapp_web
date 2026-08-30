@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "mcp-server-linkedin": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "-v",
+        "./tools/linkedin-mcp/data:/home/pwuser/.linkedin-mcp",
+        "linkedin-mcp-local:saved-posts"
+      ],
+      "env": {}
+    }
+  }
+}

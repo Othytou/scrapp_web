@@ -1,5 +1,6 @@
 import re
 import json
+from collections import defaultdict
 from bs4 import BeautifulSoup
 from utils import logger
 
@@ -54,9 +55,12 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
         "header_title": "...",
         "summary": "...",
         "highlight_skills": ["python", "django"],
+        "hide_skills": ["flutter", "flutterflow"],
         "inject_skills": {"tags-langages": ["fastapi"]},
         "rewrite_bullets": [{"ul_id": "...", "index": 0, "new_text": "...", "new_keywords": "..."}],
         "highlight_bullets": ["exp-olcr-bullets:0"],
+        "hide_bullets": ["exp-1-bullets:2"],
+        "hide_entries": ["exp-4"],
         "soft_skills": ["Autonome", "Force de proposition", "Leadership"],
         "unmatched_skills": ["angular"]
     }
@@ -112,6 +116,19 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
                 tag["class"] = classes + ["highlighted"]
 
     logger.info(f"Compétences highlightées : {highlighted_normalized}")
+
+    # 4bis. Masquer les compétences affichées par défaut mais hors sujet pour l'offre
+    hide_skills_raw = patch.get("hide_skills", [])
+    hide_skills_normalized = [normalize_skill(s) for s in hide_skills_raw]
+    hidden_skills_count = 0
+
+    if hide_skills_normalized:
+        for tag in soup.find_all("span", class_="tag"):
+            skill = normalize_skill(tag.get("data-skill", ""))
+            if skill in hide_skills_normalized:
+                tag.decompose()
+                hidden_skills_count += 1
+        logger.info(f"Compétences masquées (hors sujet pour l'offre) : {hidden_skills_count}")
 
     # 5. Inject skills
     inject_entries = patch.get("inject_skills", [])
@@ -170,12 +187,11 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
         if not ul:
             logger.warning("cv-softskills introuvable")
         else:
-            items = ul.find_all("li")
-            last_item = items[-1] if items else None
-
             ul.clear()
 
-            # Déduplique en conservant l'ordre
+            # Déduplique en conservant l'ordre — le patch est l'unique source de vérité,
+            # rien n'est réinjecté depuis l'ancien contenu (évite un doublon si le patch
+            # répète déjà un skill "obligatoire" présent dans le template d'origine).
             seen = []
             for skill in soft_skills[:4]:
                 if skill not in seen:
@@ -184,16 +200,62 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
                     li.string = skill
                     ul.append(li)
 
-            if last_item:
-                ul.append(last_item)
-
-            logger.info(f"Soft skills mis à jour : {soft_skills[:4]}")
+            logger.info(f"Soft skills mis à jour : {seen}")
 
     # 8. Log unmatched skills
     unmatched = patch.get("unmatched_skills", [])
     if unmatched:
         logger.warning(f"⚠ Compétences demandées non couvertes : {', '.join(unmatched)}")
         logger.warning("→ À toi de décider si tu les ajoutes au pool hidden dans le template")
+
+    # 9. Masquer les bullets non pertinents pour l'offre
+    hide_bullets = patch.get("hide_bullets", [])
+    by_ul = defaultdict(list)
+    for ref in hide_bullets:
+        parts = ref.rsplit(":", 1)
+        if len(parts) == 2:
+            by_ul[parts[0]].append(int(parts[1]))
+
+    hidden_bullets_count = 0
+    for ul_id, indices in by_ul.items():
+        ul = soup.find(id=ul_id)
+        if not ul:
+            logger.warning(f"ul '{ul_id}' introuvable pour masquage de bullets")
+            continue
+        items = ul.find_all("li")
+        # Ordre décroissant : supprimer par index sans décaler les index suivants
+        for index in sorted(set(indices), reverse=True):
+            if index < len(items):
+                items[index].decompose()
+                hidden_bullets_count += 1
+
+    if hide_bullets:
+        logger.info(f"Bullets masqués (hors sujet pour l'offre) : {hidden_bullets_count}")
+
+    # 10. Masquer des missions entières non pertinentes pour l'offre
+    hide_entries = patch.get("hide_entries", [])
+    for entry_id in hide_entries:
+        entry = soup.find(id=entry_id)
+        if entry:
+            entry.decompose()
+        else:
+            logger.warning(f"Entry '{entry_id}' introuvable pour masquage")
+
+    if hide_entries:
+        logger.info(f"Missions masquées (hors sujet pour l'offre) : {hide_entries}")
+
+    # 11. Auto-masquage des groupes de compétences restés vides — utile pour le CV
+    # court, où rien n'est affiché par défaut et inject_skills construit tout le
+    # contenu visible ; no-op pour le CV détaillé où displayed est toujours peuplé.
+    removed_groups = 0
+    for tags_container in soup.find_all("div", class_="skill-tags"):
+        if not tags_container.find("span", class_="tag"):
+            group = tags_container.find_parent("div", class_="skill-group")
+            (group or tags_container).decompose()
+            removed_groups += 1
+
+    if removed_groups:
+        logger.info(f"Groupes de compétences vides masqués : {removed_groups}")
 
     return soup
 

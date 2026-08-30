@@ -28,11 +28,16 @@ __pycache__/
 
 # HTML & PDF
 /template/hard_skills.html
-/template/template_cv_2.html
-/template/template_cv_detaille.html
-output/*.html
-pdf/*.pdf
+/template/my_template_*
+output/**/*.html
+pdf/**/*.pdf
 
 # Agents
-.claude
+.claude/skills/*
+!.claude/skills/generate-cv
+!.claude/skills/generate-detailled-cv
+
 _bmad
+
+# MCP servers (local tooling, contains session/cookie data)
+tools/linkedin-mcp/data/

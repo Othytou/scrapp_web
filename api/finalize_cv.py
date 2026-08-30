@@ -17,9 +17,11 @@ from models import Application
 from html_patcher import load_template, extract_cv_context, apply_patch, write_output
 from utils import build_output_filename, logger
 
-TEMPLATE_PATH = os.getenv("TEMPLATE_PATH", "./template/template_cv_detaille.html")
+TEMPLATE_PATH = os.getenv("TEMPLATE_PATH", "./template/my_template_cv_detaille.html")
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "./output")
 PDF_DIR = os.getenv("PDF_DIR", "./pdf")
+# "detaille" (defaut) ou "court" — decide quelles colonnes Application sont mises a jour.
+CV_TYPE = os.getenv("CV_TYPE", "detaille")
 
 
 def generate_pdf(html_path: str, pdf_dir: str, filename: str) -> str:
@@ -52,6 +54,10 @@ async def main():
         patched_soup = apply_patch(soup, patch, cv_context)
 
         filename = build_output_filename(application.company, application.position)
+        if CV_TYPE == "court":
+            # Suffixe plutôt que sous-dossier séparé : garde output/ et pdf/ à plat pour
+            # que le <link> relatif vers ../template/*.css reste valide dans tous les cas.
+            filename = filename.replace(".html", "_court.html")
         output_path = os.path.join(OUTPUT_DIR, filename)
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         write_output(patched_soup, output_path)
@@ -59,8 +65,12 @@ async def main():
         pdf_path = generate_pdf(output_path, PDF_DIR, filename)
 
         application.status = "generated"
-        application.cv_html_path = output_path
-        application.pdf_path = pdf_path
+        if CV_TYPE == "court":
+            application.cv_html_path_court = output_path
+            application.pdf_path_court = pdf_path
+        else:
+            application.cv_html_path = output_path
+            application.pdf_path = pdf_path
         application.highlight_skills = patch.get("highlight_skills", [])
         application.inject_skills = patch.get("inject_skills", [])
         application.unmatched_skills = patch.get("unmatched_skills", [])

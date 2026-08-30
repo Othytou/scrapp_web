@@ -23,7 +23,7 @@ def _get_client() -> Anthropic:
 
 
 def load_agent_instructions() -> str:
-    instructions_path = os.path.join(os.path.dirname(__file__), "agent.md")
+    instructions_path = os.path.join(os.path.dirname(__file__), "agent_detaille.md")
     with open(instructions_path, "r", encoding="utf-8") as f:
         return f.read()
 

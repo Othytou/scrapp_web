@@ -3,26 +3,32 @@
 
 ## api/
 
-Backend FastAPI : `/webhook` enregistre l'offre en base (statut `captured`). La génération du CV n'est PAS faite ici — elle est faite par le skill Claude Code `generate-cv` (racine du repo), qui tourne sur l'abonnement Claude Pro, pas sur l'API Anthropic facturée.
+Backend FastAPI : `/webhook` enregistre l'offre en base (statut `captured`). La génération du CV n'est PAS faite ici — elle est faite par deux skills Claude Code indépendants (racine du repo), qui tournent sur l'abonnement Claude Pro, pas sur l'API Anthropic facturée.
 
 ## Where things are
 
 - Webhook (capture uniquement) : `main.py`
-- Génération du CV : skill `.claude/skills/generate-cv/` → lit `agent.md` (règles ATS) → écrit le patch JSON lui-même (pas d'appel LLM séparé) → `pending_offers.py` (liste les offres en attente + contexte CV) et `finalize_cv.py` (applique le patch via `html_patcher.py`, écrit HTML/PDF, met à jour la DB)
-- Template actif : `template/template_cv_detaille.html` (2 pages — page 1 patchée comme avant, page 2 "Missions" statique, jamais touchée par le patch). `template/template_cv_2.html` (1 page, ancien template) reste sur disque mais n'est plus référencé par `TEMPLATE_PATH`.
-- `agent.py` (appel API Anthropic, structured outputs + prompt caching) existe encore et est testé, mais **n'est plus appelé par le flux actuel** — remplacé par le skill pour éviter la facturation API. À garder comme fallback ou à supprimer, au choix de l'utilisateur.
-- Modèles DB : `models.py` (`Application` — statuts `captured → generated → sent → ...`, `ApplicationEvent`)
-- Migrations : `db/migrations/` (Alembic)
+- Deux skills de génération, sur le **même** pool d'offres captées (`pending_offers.py`), colonnes DB et fichiers de sortie séparés :
+  - **CV court** — skill `.claude/skills/generate-cv/` → lit `agent_court.md` → template `template/my_template_cv_court.html` (rien affiché par défaut, tout vient de `inject_skills`) → `finalize_cv.py` avec `TEMPLATE_PATH=template/my_template_cv_court.html` et `CV_TYPE=court` → écrit `output/*_court.html`/`pdf/*_court.pdf`, colonnes `cv_html_path_court`/`pdf_path_court`
+  - **CV détaillé** — skill `.claude/skills/generate-detailled-cv/` → lit `agent_detaille.md` → template `template/my_template_cv_detaille.html` (2 pages, inventaire large affiché par défaut, réduit via `hide_skills`/`hide_bullets`/`hide_entries` si hors sujet) → `finalize_cv.py` (défaut, pas de `CV_TYPE`) → écrit `output/*.html`/`pdf/*.pdf`, colonnes `cv_html_path`/`pdf_path`
+  - Les deux écrivent leur patch JSON eux-mêmes (pas d'appel LLM séparé) et appliquent via `html_patcher.py`
+- Référence unique des compétences autorisées pour les deux : `template/hard_skills.html` (11 catégories). Toute compétence hors de cette liste va dans `unmatched_skills`, jamais injectée.
+- Page 2 du CV détaillé ("Missions & Réalisations Détaillées", organisée par domaine) reste statique, jamais touchée par le patch, contrairement aux expériences de la page 1 (`exp-N-bullets`) qui le sont pour les deux templates.
+- **Convention de nommage des templates :** tout fichier contenant de vraies infos personnelles est préfixé `my_template_` (`my_template_cv_detaille.html`, `my_template_cv_court.html`, `my_template_cv_2.html` — ancien template 1 page, réutilisé comme base du CV court, plus référencé par `TEMPLATE_PATH`) et exclu de Git par le motif unique `/template/my_template_*` dans `.gitignore` — pas besoin d'ajouter une ligne par fichier. Les fichiers sans ce préfixe (`template_cv_detaille.html`, `template_cv_court.html`) sont génériques et committables (placeholders type "Votre nom"). Tout nouveau template avec de vraies infos doit suivre ce préfixe dès sa création.
+- Styles externalisés : `template/cv_detaille.css` et `template/cv_court.css` (un fichier par template, pas régénéré à chaque génération de CV). Le `<link>` doit rester `../template/xxx.css` et `OUTPUT_DIR`/`PDF_DIR` ne doivent PAS être modifiés (les deux CV restent à plat dans `output/`/`pdf/`, différenciés par suffixe `_court`) — sinon le chemin relatif casse.
+- `agent.py` (appel API Anthropic, structured outputs + prompt caching) existe encore et est testé, mais **n'est plus appelé par le flux actuel** — lit maintenant `agent_detaille.md` (mis à jour lors du split court/détaillé). À garder comme fallback ou à supprimer, au choix de l'utilisateur.
+- Modèles DB : `models.py` (`Application` — statuts `captured → generated → sent → ...`, colonnes CV court/détaillé séparées ; `ApplicationEvent`)
+- Migrations : `db/migrations/` (Alembic, non fiable — voir Known pitfalls ; les colonnes `cv_html_path_court`/`pdf_path_court` ont été ajoutées par `ALTER TABLE` direct, pas par une migration versionnée)
 
 ## Running and verifying
 
 - Tests : `docker compose exec api pytest` (pas de `pytest` en local).
-- Génération de CV manuelle : invoquer le skill `generate-cv` (pas un test automatisé — nécessite une offre réelle en base).
+- Génération de CV manuelle : invoquer le skill `generate-cv` (court) ou `generate-detailled-cv` (pas un test automatisé — nécessite une offre réelle en base).
 
 ## Conventions that differ from defaults
 
 - Accès DB entièrement async (asyncpg + SQLAlchemy `AsyncSession`) — jamais de session sync.
-- Le contrat JSON du patch est défini dans `agent.md` (section "Format de retour JSON") — `inject_skills` est un tableau `{container_id, skills}`, pas un dict. `html_patcher.py`, `finalize_cv.py` et le skill `generate-cv` doivent rester synchronisés si ce schéma change.
+- Le contrat JSON du patch est défini dans `agent_court.md`/`agent_detaille.md` (section "Format de retour JSON", identique dans les deux) — `inject_skills` est un tableau `{container_id, skills}`, pas un dict. `html_patcher.py`, `finalize_cv.py` et les deux skills doivent rester synchronisés si ce schéma change.
 
 ## Known pitfalls
 

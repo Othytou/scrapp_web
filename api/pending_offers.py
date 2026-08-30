@@ -15,7 +15,7 @@ from database import AsyncSessionLocal
 from models import Application
 from html_patcher import load_template, extract_cv_context
 
-TEMPLATE_PATH = os.getenv("TEMPLATE_PATH", "./template/template_cv_detaille.html")
+TEMPLATE_PATH = os.getenv("TEMPLATE_PATH", "./template/my_template_cv_detaille.html")
 
 
 async def main():

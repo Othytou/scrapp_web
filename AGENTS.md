@@ -9,7 +9,7 @@ Pipeline personnel de candidature : une extension Chrome copie une offre d'emplo
 
 - Ne jamais modifier `.env` — modifier `.env.example` à la place. Si `.env` lui-même doit changer, le dire à l'utilisateur, qui s'en charge.
 - Ne jamais `git commit` ni `git push` (local ou prod) — l'utilisateur s'en charge exclusivement. Lire l'historique/les logs est permis.
-- Ne jamais committer de CV avec de vraies données personnelles (`output/*.html`, `pdf/*.pdf`, `template/template_cv_2.html` — déjà exclus via `.gitignore`). Tout nouveau modèle de CV doit être accompagné d'une version template générique committable ("Votre nom", "Votre poste"...).
+- Ne jamais committer de CV avec de vraies données personnelles (`output/*.html`, `pdf/*.pdf`, `template/my_template_*` — déjà exclus via `.gitignore`, motif unique couvrant tout fichier préfixé `my_template_`). Tout nouveau modèle de CV avec de vraies infos doit être créé sous ce préfixe **dès sa création**, et être accompagné d'une version générique committable au nom "normal" (sans préfixe, style "Votre nom", "Votre poste"...).
 - TDD préféré dès que possible pour les nouveaux développements.
 - Après chaque fonctionnalité développée, vérifier plutôt que de supposer que ça marche — mais **le MCP chrome-devtools ne charge pas l'extension** (l'instance Chrome pilotée par MCP refuse les extensions, testé et confirmé le 2026-08-14). L'utilisateur teste l'extension lui-même dans son navigateur habituel ; côté agent, vérifier le backend directement (curl/scripts contre l'API, tests pytest) plutôt que de retenter le chargement via MCP.
 
@@ -17,7 +17,7 @@ Pipeline personnel de candidature : une extension Chrome copie une offre d'emplo
 
 - Backend Python/FastAPI : `api/AGENTS.md`
 - Extension Chrome : `extension/AGENTS.md`
-- Flux principal : extension → `POST /webhook` (`api/main.py`) → `api/agent.py` (appel LLM) → `api/html_patcher.py` (patch du template) → `output/` + `pdf/`
+- Flux principal : extension → `POST /webhook` (`api/main.py`, capture uniquement) → skill Claude Code `generate-cv` (court) ou `generate-detailled-cv` (raisonne, produit le patch) → `api/html_patcher.py` (patch du template) → `output/` + `pdf/`. `api/agent.py` (appel API Anthropic) existe encore mais n'est plus dans le flux actuel — voir `api/AGENTS.md`.
 
 ## Running and verifying
 

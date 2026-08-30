@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Votre Nom — CV</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="../template/cv_court.css">
+</head>
+
+<body>
+	<div class="page">
+
+		<!-- HEADER -->
+		<header class="header">
+			<div>
+				<div class="header-name">Votre Nom</div>
+				<div class="header-title" id="cv-header-title">Développeur Full-Stack &nbsp;·&nbsp; DevSecOps &nbsp;·&nbsp; Cybersécurité</div>
+			</div>
+			<div class="header-contact">
+				<div>votre.email@exemple.com</div>
+				<div>+33 6 00 00 00 00</div>
+				<div><a href="https://votre-site.fr">votre-site.fr</a></div>
+				<div>Télétravail · Présentiel · International</div>
+			</div>
+		</header>
+
+		<div class="body">
+			<!-- ── LEFT COLUMN ── -->
+			<aside class="col-left">
+				<div class="sidebar-section">
+					<div class="sidebar-label">Compétences</div>
+					<!--
+						CV court : rien n'est affiché par défaut (contrairement au CV détaillé).
+						Chaque conteneur .skill-tags est vide ; le skill le remplit via
+						inject_skills selon l'offre. Un groupe resté vide est auto-masqué
+						par html_patcher.py (voir agent_court.md).
+					-->
+					<div class="skill-group" id="skills-court-langages">
+						<div class="skill-group-title">Langages & Frameworks</div>
+						<div class="skill-tags" id="tags-court-langages"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-backend">
+						<div class="skill-group-title">Backend & API</div>
+						<div class="skill-tags" id="tags-court-backend"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-reseau-auto">
+						<div class="skill-group-title">Réseau & Automatisation</div>
+						<div class="skill-tags" id="tags-court-reseau-auto"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-ia-data">
+						<div class="skill-group-title">IA / Data</div>
+						<div class="skill-tags" id="tags-court-ia-data"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-architecture">
+						<div class="skill-group-title">Architecture</div>
+						<div class="skill-tags" id="tags-court-architecture"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-devops">
+						<div class="skill-group-title">DevOps & Cloud</div>
+						<div class="skill-tags" id="tags-court-devops"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-monitoring">
+						<div class="skill-group-title">Monitoring & Observability</div>
+						<div class="skill-tags" id="tags-court-monitoring"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-securite">
+						<div class="skill-group-title">Sécurité & DevSecOps</div>
+						<div class="skill-tags" id="tags-court-securite"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-outils">
+						<div class="skill-group-title">Outils & Qualité</div>
+						<div class="skill-tags" id="tags-court-outils"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-systemes">
+						<div class="skill-group-title">Systèmes & Réseaux</div>
+						<div class="skill-tags" id="tags-court-systemes"></div>
+					</div>
+
+					<div class="skill-group" id="skills-court-cyber">
+						<div class="skill-group-title">Securité (Cyber)</div>
+						<div class="skill-tags" id="tags-court-cyber"></div>
+					</div>
+
+				</div>
+
+				<div class="sidebar-section">
+					<div class="sidebar-label">Langues</div>
+					<div class="lang-item"><span class="lang-name">Français</span><span class="lang-level">Maternel</span></div>
+					<div class="lang-item"><span class="lang-name">Anglais</span><span class="lang-level">Professionnel</span></div>
+					<div class="lang-item"><span class="lang-name">Arabe</span><span class="lang-level">Bonnes notions</span></div>
+					<div class="lang-item"><span class="lang-name">Espagnol</span><span class="lang-level">Scolaire</span></div>
+				</div>
+
+				<div class="sidebar-section">
+					<div class="sidebar-label">Soft Skills</div>
+					<ul class="text-list" id="cv-softskills">
+						<li>Autodidacte</li>
+						<li>Autonome</li>
+						<li>Force de proposition</li>
+					</ul>
+				</div>
+
+				<div class="sidebar-section">
+					<div class="sidebar-label">Centres d'intérêt</div>
+					<ul class="text-list">
+						<li>Basket-Ball</li>
+						<li>Volley-Ball</li>
+						<li>Escape Games</li>
+						<li>Jeux vidéo</li>
+					</ul>
+				</div>
+
+			</aside>
+
+			<!-- ── RIGHT COLUMN ── -->
+			<main class="col-right">
+
+				<p class="summary" id="cv-summary">
+					Développeur Full-Stack avec 5 ans d'expérience sur des projets FullStack, DevSecOps et cybersécurité. Habitué aux environnements variés, au delivery rapide et
+					aux infrastructures sécurisées. Disponible immédiatement.
+				</p>
+
+				<section class="section">
+					<div class="section-title">Expériences professionnelles</div>
+
+					<div class="entry" id="exp-0" data-company="entreprise-1">
+						<div class="entry-meta">
+							<div class="entry-period">Depuis<br>janv. 2021</div>
+							<div class="entry-company">Entreprise 1</div>
+						</div>
+						<div class="entry-body">
+							<div class="entry-title" id="exp-0-title">Freelance · Ingénieur Full-Stack</div>
+							<ul class="entry-bullets" id="exp-0-bullets">
+								<li data-keywords="saas,nextjs,django,api,roles,dataviz">Développement de SaaS avec Next.js et Django — intégration d'API, gestion des rôles, data
+									viz</li>
+								<li data-keywords="flutter,mobile,uiux,state-management,deployment">Applications mobiles Flutter (architecture, UI/UX, state management,
+									déploiement)</li>
+								<li data-keywords="n8n,webhooks,automation,integrations">Automatisation de workflows avec n8n (webhooks, intégrations multi-services)</li>
+								<li data-keywords="cicd,jenkins,vps,cloud,securite">Pipelines CI/CD Jenkins, déploiement VPS/Cloud, sécurisation des environnements</li>
+								<li data-keywords="grafana,prometheus,terraform,kubernetes,iac,monitoring">Monitoring Grafana + Prometheus, IaC Terraform, orchestration Kubernetes
+								</li>
+								<li data-keywords="bots,discord,reseaux-sociaux,gaming">Développement de bots (Discord, réseaux sociaux, jeux vidéo)</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="entry" id="exp-1" data-company="entreprise-2">
+						<div class="entry-meta">
+							<div class="entry-period">03/2024 –<br>11/2025</div>
+							<div class="entry-company">Entreprise 2</div>
+						</div>
+						<div class="entry-body">
+							<div class="entry-title" id="exp-1-title">Alternant · Full-Stack &amp; DevOps</div>
+							<ul class="entry-bullets" id="exp-1-bullets">
+								<li data-keywords="laravel,vuejs,fullstack,backend,frontend">Full-Stack Laravel (backend) + Vue.js (frontend)</li>
+								<li data-keywords="django,microservices,api,data-collection,multisource">Microservice Django — collecte de données publiques, APIs, intégration
+									multisource</li>
+								<li data-keywords="dast,sast,vuln-mgmt,rgpd,devsecops,securite">DevSecOps — gestion des vulnérabilités, DAST/SAST, conformité RGPD</li>
+								<li data-keywords="docker,kubernetes,prometheus,grafana,n8n,monitoring">Docker, Kubernetes, Prometheus + Grafana, pipelines n8n</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="entry" id="exp-2" data-company="entreprise-3">
+						<div class="entry-meta">
+							<div class="entry-period">10/2023 –<br>01/2024</div>
+							<div class="entry-company">Entreprise 3</div>
+							<div class="entry-location">Marseille</div>
+						</div>
+						<div class="entry-body">
+							<div class="entry-title" id="exp-2-title">Stagiaire · Développeur Mobile</div>
+							<ul class="entry-bullets" id="exp-2-bullets">
+								<li data-keywords="flutter,supabase,agile,uiux,mobile">Applications Flutter — UI/UX, intégration Supabase, méthode Agile</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="entry" id="exp-3" data-company="entreprise-4">
+						<div class="entry-meta">
+							<div class="entry-period">03/2022 –<br>10/2023</div>
+							<div class="entry-company">Entreprise 4</div>
+							<div class="entry-location">Toulouse</div>
+						</div>
+						<div class="entry-body">
+							<div class="entry-title" id="exp-3-title">Alternant · Développeur Web</div>
+							<ul class="entry-bullets" id="exp-3-bullets">
+								<li data-keywords="django,api,auth,bdd,mailing,securite">Architecture Django — APIs, auth, BDD, mass mailing, sécurité</li>
+								<li data-keywords="docker,devops,monitoring,maintenance,deployment">DevOps Docker, déploiement, monitoring, maintenance</li>
+								<li data-keywords="frontend,responsive,a11y,seo,maquettes">Frontend — maquettes dynamiques, responsive, a11y, SEO</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="entry" id="exp-4" data-company="entreprise-5">
+						<div class="entry-meta">
+							<div class="entry-period">05/2020 –<br>07/2021</div>
+							<div class="entry-company">Entreprise 5</div>
+							<div class="entry-location">Perpignan</div>
+						</div>
+						<div class="entry-body">
+							<div class="entry-title" id="exp-4-title">Stagiaire · Développeur WordPress</div>
+							<ul class="entry-bullets" id="exp-4-bullets">
+								<li data-keywords="wordpress,mysql,seo,sea,photoshop,illustrator,graphisme">Sites WordPress, BDD MySQL, SEO/SEA, charte graphique (Photoshop,
+									Illustrator)</li>
+								<li data-keywords="php,plugin,wordpress,custom">Développement d'un plugin PHP sur mesure</li>
+							</ul>
+						</div>
+					</div>
+
+				</section>
+
+				<section class="section">
+					<div class="section-title">Formation et Certification</div>
+
+					<div class="edu-entry">
+						<div class="edu-period">2024 – 2025</div>
+						<div>
+							<div class="edu-degree">Mastère · Expert en sécurité des développements informatiques</div>
+							<div class="edu-school">École/Formation 2</div>
+						</div>
+					</div>
+
+					<div class="edu-entry">
+						<div class="edu-period">2022 – 2023</div>
+						<div>
+							<div class="edu-degree">Licence Pro · Concepteur Développeur App Web &amp; Mobile</div>
+							<div class="edu-school">École/Formation 3</div>
+						</div>
+					</div>
+
+					<div class="edu-entry">
+						<div class="edu-period">2019 – 2021</div>
+						<div>
+							<div class="edu-degree">BTS · Systèmes Numériques Informatique et Réseaux</div>
+							<div class="edu-school">École/Formation 4</div>
+						</div>
+					</div>
+
+					<div class="edu-entry">
+						<div class="edu-period">En cours</div>
+						<div>
+							<div class="edu-degree">CKA — Certified Kubernetes Administrator</div>
+						</div>
+					</div>
+					<div class="edu-entry">
+						<div class="edu-period">En cours</div>
+						<div>
+							<div class="edu-degree">CKAD — Certified Kubernetes Application Developer</div>
+						</div>
+					</div>
+
+				</section>
+
+			</main>
+		</div>
+	</div>
+
+	<script>
+		window.CV_SKILLS_POOL = {
+			displayed: [],
+			hidden: [
+				"ab-testing", "accessibilite", "active-recon", "ad-security", "aes", "agile", "airflow",
+				"aks", "alert-triage", "ansible", "anssi", "api-graphql", "api-pentesting", "api-rest",
+				"architecture-monolithique", "async-programming", "attack-surface-discovery",
+				"auth-bypass", "aws", "awx", "azure", "azure-devops", "azure-monitor", "azure-sql",
+				"azure-storage", "azure-vms", "azure-vnet", "azurefirewall", "bash", "buffer-overflow",
+				"burp-suite", "checkov", "cicd", "cisco", "classification", "clean-architecture",
+				"clustering", "command-injection", "computer-vision", "configuration-audit",
+				"container-scanning", "cross-validation", "csrf", "css", "cve-cvss", "cypress",
+				"dast-sast", "data-cleaning", "data-modeling", "data-transformation",
+				"data-visualization", "datadog", "dbt", "ddd", "deep-learning", "dependency-check",
+				"dependency-scanning", "design-patterns", "dhcp", "django", "dns", "dns-enum", "docker",
+				"ec2", "eks", "elastic-security", "elb-alb", "elk", "etl", "event-driven-architecture",
+				"exploit-development", "falco", "fastapi", "feature-engineering", "feature-selection",
+				"ffuf", "file-upload-vuln", "firewall", "flask", "flutter", "flutterflow", "formatting",
+				"fortinet", "ghidra", "git", "github-actions", "gitlab-ci", "gitleaks", "gitops",
+				"gitversion", "gobuster", "grafana", "hardening", "hashcat", "helm", "hmac", "html",
+				"http-https", "hyperparameter-optimization", "iac-scanning", "iam", "idor", "ids-ips",
+				"iso27001", "javascript", "jenkins", "jest", "jinja2", "john-the-ripper", "jupyter",
+				"jwt", "jwt-attacks", "kafka", "key-vault", "kpi-metrics", "kubernetes", "lan-wan",
+				"laravel", "linting", "linux", "load-balancing", "loki", "machine-learning",
+				"malware-analysis", "matplotlib", "metasploit", "microservices", "model-evaluation",
+				"mongodb", "mysql", "n8n", "netmiko-napalm", "network-enum", "network-policies", "nextjs",
+				"nginx", "nist", "nlp", "nmap", "nodejs", "nosql", "numpy", "oauth-security", "oauth2",
+				"openapi-swagger", "osint", "owasp", "owasp-zap", "pandas", "passive-recon",
+				"path-traversal", "php", "phpunit", "playwright", "postgresql", "powershell",
+				"privilege-escalation", "prometheus", "pwa", "pytest", "python", "pytorch", "rabbitmq",
+				"rds", "react", "redis", "regression", "reporting", "reseau", "responsive-design",
+				"reverse-proxy", "rgpd", "root-cause-analysis", "routing", "rsa", "rust", "s3", "sbom",
+				"sca", "scikit-learn", "scipy", "scrum", "seaborn", "secret-scanning",
+				"secrets-management", "security-audit", "security-gate", "security-groups",
+				"security-monitoring", "selenium", "shellcode", "siem", "solid", "sonarqube", "sql",
+				"sql-injection", "sqlmap", "sqlserver", "ssh", "ssrf", "ssti", "statistical-modeling",
+				"subdomain-enum", "supply-chain-security", "suricata", "tcp-ip", "tensorflow",
+				"terraform", "tests-e2e", "tests-integration", "tests-unitaires", "time-series", "trivy",
+				"typescript", "unix", "virtualwan", "vlan", "vpc", "vpn", "vps", "vuejs", "vuln-mgmt",
+				"vulnerability-assessment", "wazuh", "webhooks", "websocket", "windows-server", "xss",
+				"xxe", "zabbix", "zeek"
+			],
+			labels: {
+				"python": "Python", "django": "Django", "php": "PHP", "laravel": "Laravel",
+				"rust": "Rust", "nodejs": "Node.js", "react": "React", "nextjs": "Next.js",
+				"vuejs": "Vue.js", "typescript": "TypeScript", "html": "HTML", "css": "CSS",
+				"javascript": "JavaScript", "flutter": "Flutter", "flutterflow": "FlutterFlow",
+				"api-rest": "API REST", "api-graphql": "API GraphQL", "postgresql": "PostgreSQL",
+				"sql": "SQL", "nosql": "NoSQL", "webhooks": "Webhooks", "sqlserver": "SQL Server",
+				"mysql": "MySQL", "mongodb": "MongoDB", "cisco": "Cisco", "fortinet": "Fortinet",
+				"jinja2": "Jinja2", "ansible": "Ansible", "netmiko-napalm": "Netmiko/NAPALM",
+				"lan-wan": "LAN/WAN", "awx": "AWX", "virtualwan": "Virtual WAN",
+				"azurefirewall": "Azure Firewall", "pytorch": "PyTorch", "numpy": "NumPy",
+				"pandas": "Pandas", "etl": "ETL / ELT", "scikit-learn": "Scikit-learn",
+				"airflow": "Airflow", "kafka": "Kafka", "rabbitmq": "RabbitMQ",
+				"microservices": "Microservices", "docker": "Docker", "kubernetes": "Kubernetes",
+				"helm": "Helm", "terraform": "Terraform", "aws": "AWS", "azure": "Azure", "vps": "VPS",
+				"cicd": "CI/CD", "jenkins": "Jenkins", "github-actions": "GitHub Actions",
+				"gitlab-ci": "GitLab CI", "prometheus": "Prometheus", "grafana": "Grafana",
+				"elk": "ELK Stack", "loki": "Loki", "dast-sast": "DAST/SAST", "owasp": "OWASP Top 10",
+				"vuln-mgmt": "Vulnerability Management", "hardening": "Hardening", "ids-ips": "IDS/IPS",
+				"rgpd": "RGPD", "iso27001": "Notions ISO 27001", "git": "Git", "gitversion": "GitVersion",
+				"jest": "Jest / Vitest", "pytest": "pytest", "playwright": "Playwright", "n8n": "n8n",
+				"agile": "Agile", "scrum": "Scrum", "linux": "Linux", "reseau": "Réseau",
+				"windows-server": "Windows Server", "unix": "Unix", "bash": "Bash",
+				"powershell": "PowerShell", "fastapi": "FastAPI", "flask": "Flask",
+				"responsive-design": "Responsive Design", "pwa": "PWA", "accessibilite": "Accessibilité",
+				"openapi-swagger": "OpenAPI / Swagger", "oauth2": "OAuth 2.0", "jwt": "JWT",
+				"websocket": "WebSocket", "redis": "Redis", "jupyter": "Jupyter",
+				"data-cleaning": "Data Cleaning", "data-transformation": "Data Transformation",
+				"data-modeling": "Data Modeling", "data-visualization": "Data Visualization",
+				"reporting": "Reporting", "kpi-metrics": "KPI / Metrics", "ab-testing": "A/B Testing",
+				"scipy": "SciPy", "tensorflow": "TensorFlow", "matplotlib": "Matplotlib",
+				"seaborn": "Seaborn", "machine-learning": "Machine Learning",
+				"deep-learning": "Deep Learning", "nlp": "NLP", "computer-vision": "Computer Vision",
+				"feature-engineering": "Feature Engineering", "feature-selection": "Feature Selection",
+				"model-evaluation": "Model Evaluation",
+				"hyperparameter-optimization": "Hyperparameter Optimization",
+				"cross-validation": "Cross-validation", "classification": "Classification",
+				"regression": "Regression", "clustering": "Clustering", "time-series": "Time Series",
+				"statistical-modeling": "Statistical Modeling", "dbt": "dbt",
+				"architecture-monolithique": "Architecture monolithique",
+				"design-patterns": "Design Patterns", "solid": "SOLID",
+				"clean-architecture": "Clean Architecture", "ddd": "Domain-Driven Design (DDD)",
+				"event-driven-architecture": "Event-driven architecture",
+				"async-programming": "Asynchronous programming", "gitops": "GitOps", "s3": "AWS S3",
+				"ec2": "AWS EC2", "eks": "AWS EKS", "rds": "AWS RDS", "vpc": "AWS VPC", "iam": "AWS IAM",
+				"elb-alb": "ELB / ALB", "azure-vms": "Azure VMs", "aks": "Azure AKS",
+				"azure-devops": "Azure DevOps", "azure-storage": "Azure Storage",
+				"azure-sql": "Azure SQL", "azure-vnet": "Virtual Network (Azure)", "datadog": "Datadog",
+				"zabbix": "Zabbix", "azure-monitor": "Azure Monitor", "sca": "SCA",
+				"secret-scanning": "Secret Scanning", "container-scanning": "Container Scanning",
+				"iac-scanning": "IaC Scanning", "dependency-scanning": "Dependency Scanning",
+				"security-gate": "Security Gate", "sbom": "SBOM",
+				"supply-chain-security": "Supply Chain Security", "trivy": "Trivy",
+				"gitleaks": "GitLeaks", "owasp-zap": "OWASP ZAP", "dependency-check": "Dependency-Check",
+				"checkov": "Checkov", "falco": "Falco", "secrets-management": "Gestion des secrets",
+				"key-vault": "Key Vault", "security-groups": "Security Groups",
+				"network-policies": "Network Policies", "phpunit": "PHPUnit",
+				"tests-unitaires": "Tests unitaires", "tests-integration": "Tests d'intégration",
+				"tests-e2e": "Tests fonctionnels / E2E", "linting": "Linting", "formatting": "Formatting",
+				"sonarqube": "SonarQube", "cypress": "Cypress", "selenium": "Selenium", "ssh": "SSH",
+				"dns": "DNS", "dhcp": "DHCP", "tcp-ip": "TCP/IP", "http-https": "HTTP/HTTPS",
+				"vpn": "VPN", "load-balancing": "Load Balancing", "reverse-proxy": "Reverse Proxy",
+				"nginx": "Nginx", "firewall": "Firewall", "vlan": "VLAN", "routing": "Routing",
+				"osint": "OSINT", "passive-recon": "Passive Reconnaissance",
+				"active-recon": "Active Reconnaissance",
+				"attack-surface-discovery": "Attack Surface Discovery",
+				"subdomain-enum": "Subdomain Enumeration", "dns-enum": "DNS Enumeration",
+				"network-enum": "Network Enumeration", "burp-suite": "Burp Suite",
+				"sql-injection": "SQL Injection", "xss": "XSS", "csrf": "CSRF", "ssrf": "SSRF",
+				"ssti": "SSTI", "xxe": "XXE", "idor": "IDOR", "path-traversal": "Path Traversal",
+				"file-upload-vuln": "File Upload Vulnerabilities",
+				"command-injection": "Command Injection", "auth-bypass": "Authentication Bypass",
+				"jwt-attacks": "JWT Attacks", "oauth-security": "OAuth Security",
+				"api-pentesting": "API Pentesting", "ad-security": "Active Directory Security",
+				"privilege-escalation": "Privilege Escalation", "metasploit": "Metasploit",
+				"nmap": "Nmap", "sqlmap": "SQLmap", "ffuf": "ffuf", "gobuster": "Gobuster",
+				"hashcat": "Hashcat", "john-the-ripper": "John the Ripper",
+				"exploit-development": "Exploit Development", "shellcode": "Shellcode",
+				"buffer-overflow": "Buffer Overflow", "siem": "SIEM",
+				"security-monitoring": "Security Monitoring", "alert-triage": "Alert Triage",
+				"root-cause-analysis": "Root Cause Analysis", "malware-analysis": "Malware Analysis",
+				"wazuh": "Wazuh", "elastic-security": "Elastic Security", "suricata": "Suricata",
+				"zeek": "Zeek", "ghidra": "Ghidra", "rsa": "RSA", "aes": "AES", "hmac": "HMAC",
+				"vulnerability-assessment": "Vulnerability Assessment", "cve-cvss": "CVE / CVSS",
+				"security-audit": "Security Audit", "configuration-audit": "Configuration Audit",
+				"nist": "NIST", "anssi": "ANSSI"
+			}
+		};
+	</script>
+
+</body>
+
+</html>
