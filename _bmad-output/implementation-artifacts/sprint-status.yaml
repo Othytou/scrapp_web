@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 08-30-2026 22:25
-last_updated: 08-30-2026 22:26
+last_updated: 08-31-2026
 project: scrapp_web
 project_key: NOKEY
 tracking_system: file-system
@@ -45,6 +45,7 @@ development_status:
   2-1b-conseils-malt-freelance-extraits-des-posts-linkedin-enregist: 
     ready-for-dev
   2-2-extraction-d-offre-depuis-un-post-linkedin: backlog
+  2-3-corpus-de-missions-multi-secteurs-scrapp-experiences: review
   epic-2-retrospective: optional
 
   epic-3: backlog

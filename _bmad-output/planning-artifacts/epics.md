@@ -202,27 +202,31 @@ Afin que cette offre alimente le même pipeline de capture que les job-boards cl
 
 **Note :** Choix "soumission manuelle" fait par défaut, en cohérence avec NFR2 (pas de polling). Le PRD (§9 Q3) laissait ce mécanisme ouvert entre soumission manuelle et surveillance de feed — à corriger si une autre approche est voulue.
 
-### Story 2.3: Corpus de missions bancaires réalisées, extraites de profils LinkedIn
+### Story 2.3: Corpus de missions professionnelles multi-secteurs, extraites de profils LinkedIn (skill `lk-scrapp-experiences`)
 
 En tant que Chef,
-Je veux que le MCP LinkedIn recherche des profils de personnes ayant réalisé des missions dans des banques (CIC, Crédit Agricole, Société Générale, LCL, Banque Populaire) et en extraie les missions réalisées par domaine (dev, devops, data),
-Afin de disposer d'un corpus de références concrètes de missions bancaires, réutilisable pour enrichir mon CV et affiner mon positionnement freelance sur ce secteur.
+Je veux un skill `lk-scrapp-experiences` qui recherche des profils LinkedIn dans un métier donné (dev, data, sécurité, DevOps, ...) selon une combinaison de filtres, et en extraie les missions réalisées lorsqu'elles sont qualitatives et détaillées,
+Afin de disposer d'un corpus de références concrètes de missions professionnelles, tous secteurs confondus, réutilisable pour enrichir mon CV et affiner mon positionnement freelance — sans me limiter au seul secteur bancaire.
 
 **Critères d'acceptation :**
 
-**Étant donné** un skill dédié invocable avec le nom d'une entreprise et un poste ou une compétence clé (ex. `/scrapp-profil-lk lcl dev python`)
-**Quand** Chef l'invoque
-**Alors** le skill utilise le MCP LinkedIn (`search_people`, `get_person_profile`) pour trouver des profils pertinents ayant travaillé dans l'entreprise donnée sur le poste/la compétence donnée, et en extrait les missions réalisées (description, stack technique, client si mentionné, durée quand disponible)
+**Étant donné** un skill dédié nommé `lk-scrapp-experiences`
+**Quand** Chef l'invoque avec une combinaison de filtres parmi : Secteur (bancaire, communication, logistique, éditeur de logiciel, ...), Entreprise (SG, LCL, Airbus, ...), Poste (développeur, DevOps, data analyste, data engineer, ...), Compétence (Python, CI/CD, Kubernetes, ELK, ...), Durée des missions (ex. ≥1 mois, ≥1 an), Localisation du profil (France, Lyon, Angleterre, Arabie Saoudite, Japon, ...), et un nombre maximal de profils à vérifier (ex. 3, 10, 100)
+**Alors** le skill utilise le MCP LinkedIn (`search_people`, `get_person_profile` — avec fallback chrome-devtools si le MCP bloque, cf. note ci-dessous) pour trouver des profils correspondant à la combinaison de filtres fournie, dans la limite du nombre maximal de profils demandé
 
-**Étant donné** les missions extraites d'un profil
-**Quand** elles sont enregistrées
-**Alors** elles sont classées par domaine dans `tools/linkedin-mcp/data/missions-realisees/` — dev dans `missions-dev.md`, devops dans `missions-devops.md`, data dans `mission-data.md` — un fichier par domaine, structuré à l'identique des fichiers `tips-linkedin/` existants (texte de la mission, profil source, catégorie)
+**Étant donné** un profil trouvé et ses missions listées
+**Quand** le skill évalue chaque mission
+**Alors** seules les missions jugées qualitatives et suffisamment détaillées (description concrète, stack technique identifiable) sont retenues — les entrées trop vagues ou non vérifiables sont ignorées
+
+**Étant donné** une mission retenue
+**Quand** elle est enregistrée
+**Alors** elle est classée par branche métier dans `tools/linkedin-mcp/data/missions-realisees/missions-[branche].md` (un fichier par branche, ex. `missions-dev.md`, `missions-devops.md`, `missions-data.md`, `missions-securite.md` — créé à la volée selon les profils trouvés, pas de liste de branches fermée), structurée à l'identique des fichiers `tips-linkedin/` existants (texte de la mission, profil source, catégorie), enrichie des filtres identifiés quand disponibles (secteur, entreprise, compétences)
 
 **Étant donné** le contrôle strict des permissions MCP (NFR2)
 **Quand** ce scraping est exécuté
-**Alors** il reste une action ponctuelle déclenchée manuellement par Chef, ciblée sur un nombre limité de profils par run — pas de scraping massif ni de polling automatique
+**Alors** il reste une action ponctuelle déclenchée manuellement par Chef, borné par le paramètre de nombre maximal de profils — pas de scraping massif ni de polling automatique
 
-**Note (2026-08-31) :** Story ajoutée en scope étendu d'Epic 2, au-delà de FR5/FR6/FR7 du PRD initial — dans l'esprit de FR5 (analyse de profils publics) mais appliquée à la constitution d'un corpus de missions bancaires réutilisables plutôt qu'à des conseils génériques. Décidée directement par Chef, sans passer par extraction PRD formelle. Un premier test manuel (3 profils, volet dev uniquement) a été effectué à la création de cette story pour valider l'approche — voir `tools/linkedin-mcp/data/missions-realisees/missions-dev.md` (dossier gitignoré via `tools/linkedin-mcp/data/`, donc pas de contrepartie `.example.md` nécessaire — cf. NFR1).
+**Note (2026-08-31, révisée) :** Story initialement scopée au seul secteur bancaire, élargie à la demande de Chef pour couvrir tout secteur/métier via un système de filtres combinables (secteur, entreprise, poste, compétence, durée, localisation, nombre max de profils) et renommée autour du skill `lk-scrapp-experiences` (remplace le nom provisoire `/scrapp-profil-lk`). Reste dans l'esprit de FR5 (analyse de profils publics), appliquée à la constitution d'un corpus de missions professionnelles réutilisables plutôt qu'à des conseils génériques. Décidée directement par Chef, sans passer par extraction PRD formelle. Un premier test manuel (3 profils, secteur bancaire, volet dev uniquement) a été effectué avant cet élargissement — voir `tools/linkedin-mcp/data/missions-realisees/missions-dev.md` (dossier gitignoré via `tools/linkedin-mcp/data/`, donc pas de contrepartie `.example.md` nécessaire — cf. NFR1).
 
 **Note (2026-08-31) — fallback MCP LinkedIn → chrome-devtools :** Le MCP LinkedIn (Docker) a bloqué durant ce premier test (`No valid LinkedIn session is available in Docker` — session invalidée, logs serveur `Feed auth check failed: net::ERR_TOO_MANY_REDIRECTS`). Le test a été mené intégralement via le MCP chrome-devtools à la place (session LinkedIn déjà authentifiée dans le profil Chrome dédié), en naviguant directement sur les URLs de recherche (`/search/results/people/?keywords=...`) et de détail d'expérience (`/in/<slug>/details/experience/`) plutôt que via les tool calls `search_people`/`get_person_profile`. Règle de fallback ajoutée dans `AGENTS.md` (racine) : quand le MCP LinkedIn bloque, basculer sur chrome-devtools sans interrompre la tâche, et signaler à l'utilisateur comment relancer la session LinkedIn MCP en parallèle.
 
