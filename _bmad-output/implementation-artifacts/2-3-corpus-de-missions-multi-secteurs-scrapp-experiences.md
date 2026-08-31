@@ -4,7 +4,7 @@ baseline_commit: 0005403902c2f5847db4450da9285cb7bb9691f7
 
 # Story 2.3: Corpus de missions professionnelles multi-secteurs, extraites de profils LinkedIn (skill `lk-scrapp-experiences`)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -44,6 +44,24 @@ so that je dispose d'un corpus de références concrètes de missions profession
   - [x] Relancer le skill avec au moins une combinaison de filtres hors secteur bancaire (ex. secteur logistique ou éditeur de logiciel) pour confirmer que le skill n'est plus limité aux banques
   - [x] Confirmer que `max_profils` est bien respecté (ne pas dépasser la limite demandée)
   - [x] Confirmer qu'aucune mission vague/non détaillée n'est écrite
+
+### Review Findings
+
+- [x] [Review][Patch] Référence cassée "Étape 5" dans SKILL.md — la détermination de branche a été déplacée en 3c lors de la révision incrémentale, la référence n'a pas été mise à jour [.claude/skills/lk-scrapp-experiences/SKILL.md:20]
+- [x] [Review][Patch] epics.md AC#3 décrit encore le format `tips-linkedin/` (Conseil/Source/Catégorie) alors que le format réellement utilisé (SKILL.md + story + fichiers `missions-*.md`) est celui, plus riche, de `missions-dev.md` (poste, entreprise/secteur, durée, mission, stack technique, profil source) [_bmad-output/planning-artifacts/epics.md — Story 2.3 AC#3]
+- [x] [Review][Patch] `missions-data.md` (et probablement `missions-dev.md`) portent encore un en-tête scopé "en banque", contredisant la généralisation de la story — seul `missions-devops.md` a été mis à jour [tools/linkedin-mcp/data/missions-realisees/missions-data.md:1]
+- [x] [Review][Patch] Aucune règle de gestion explicite quand 0 profil est trouvé, ou quand des profils sont trouvés mais qu'aucune mission ne passe le filtre qualité/durée — le rapport final devrait le signaler explicitement plutôt que de rendre un récapitulatif silencieusement vide [.claude/skills/lk-scrapp-experiences/SKILL.md — Étapes 2 et 4]
+- [x] [Review][Patch] Aucun comportement défini quand le fallback chrome-devtools échoue aussi (ou quand le profil est privé/inaccessible malgré un outil fonctionnel) — contrairement au cas "aucune mission ne passe le filtre" (3b), rien ne dit de compter le profil et de continuer [.claude/skills/lk-scrapp-experiences/SKILL.md:45,51-57]
+- [x] [Review][Patch] Aucune règle de parsing pour les formats de durée hétérogènes de LinkedIn (ex. "13 ans 7 mois", plage de dates nues, mission en cours) face au filtre `duree` [.claude/skills/lk-scrapp-experiences/SKILL.md:64]
+- [x] [Review][Patch] Aucune règle de normalisation du nom de branche déduit (accents, casse) avant de créer un nouveau fichier — risque de fichiers quasi-dupliqués (ex. "securite" vs "sécurité") qui saperait l'anti-duplication visée par l'AC#5 [.claude/skills/lk-scrapp-experiences/SKILL.md:72]
+- [x] [Review][Patch] Aucune normalisation d'URL avant comparaison de doublon (protocole, slash final, paramètres de tracking) — un doublon pourrait passer entre les mailles [.claude/skills/lk-scrapp-experiences/SKILL.md:74]
+- [x] [Review][Patch] Aucune règle explicite pour calculer le N séquentiel suivant en cas d'ajout à un fichier de branche existant [.claude/skills/lk-scrapp-experiences/SKILL.md:78]
+- [x] [Review][Patch] Le seuil qualité ("qualitative et détaillée", "en cas de doute écarte") n'a aucun exemple concret pass/fail pour calibrer un jugement cohérent d'une exécution à l'autre [.claude/skills/lk-scrapp-experiences/SKILL.md:66-71]
+- [x] [Review][Patch] `sprint-status.yaml` : `last_updated` a perdu son heure (`08-30-2026 22:26` → `08-31-2026`), format incohérent avec le champ `generated` du même fichier [_bmad-output/implementation-artifacts/sprint-status.yaml]
+- [x] [Review][Patch] Task 1 coché comme fait mais l'exemple d'invocation structurée (`lk-scrapp-experiences secteur:logistique poste:devops max:5`) explicitement demandé par la subtask n'apparaît pas dans la description du frontmatter — seuls des exemples en langage naturel y figurent [.claude/skills/lk-scrapp-experiences/SKILL.md:3]
+- [x] [Review][Patch] Le fallback chrome-devtools n'encode que `keywords` dans l'URL de recherche — le filtre `localisation` est silencieusement perdu dès que le MCP est indisponible, alors que l'AC#1 promet le respect de "la combinaison de filtres fournie" même en fallback [.claude/skills/lk-scrapp-experiences/SKILL.md:39,45]
+- [x] [Review][Patch] Aucun contrôle de cohérence secteur : lors de la vérification manuelle, une mission a été retenue pour Claude Costantini chez Eureka Education (groupe scolaire) alors que le filtre demandé était `secteur: éditeur de logiciel` — le filtre qualité (3b) ne vérifie que description/stack/durée, pas la cohérence avec un `secteur` explicitement demandé [tools/linkedin-mcp/data/missions-realisees/missions-securite.md — entrée #3 ; .claude/skills/lk-scrapp-experiences/SKILL.md:65-71]
+- [x] [Review][Defer] Aucun mécanisme de re-vérification (test automatisé ou autre) ne permet de contrôler dans la durée que la dédup, le filtre qualité et l'écriture incrémentale décrits dans SKILL.md fonctionnent réellement — la seule preuve est la note de vérification manuelle de la Task 5, et les fichiers de sortie sont gitignorés donc invisibles dans tout futur diff — deferred, pre-existing (pattern déjà présent sur tout ce type de story BMAD/skill dans ce projet, non spécifique à cette story)
 
 ## Dev Notes
 
@@ -94,11 +112,16 @@ so that je dispose d'un corpus de références concrètes de missions profession
 
 ### File List
 
-- `.claude/skills/lk-scrapp-experiences/SKILL.md` (nouveau)
+- `.claude/skills/lk-scrapp-experiences/SKILL.md` (nouveau, révisé post-review)
 - `tools/linkedin-mcp/data/missions-realisees/missions-securite.md` (nouveau — gitignoré, cf. NFR1)
 - `tools/linkedin-mcp/data/missions-realisees/missions-devops.md` (modifié — gitignoré, cf. NFR1)
+- `tools/linkedin-mcp/data/missions-realisees/missions-dev.md` (en-tête généralisé hors banque — gitignoré, cf. NFR1)
+- `tools/linkedin-mcp/data/missions-realisees/missions-data.md` (en-tête généralisé hors banque — gitignoré, cf. NFR1)
+- `_bmad-output/planning-artifacts/epics.md` (AC#3 corrigée pour référencer le bon format de sortie)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (format `last_updated` corrigé)
 
 ## Change Log
 
 - 2026-08-31 : Implémentation initiale — skill `lk-scrapp-experiences` créé, vérifié en conditions réelles (3 profils, filtres poste=RSSI/sécurité + secteur=éditeur de logiciel, max_profils=3). Fallback chrome-devtools exercé avec succès suite à un blocage MCP LinkedIn sur `get_person_profile`. Story passée en `review`.
 - 2026-08-31 : Retour utilisateur post-review — le skill traitait les profils en lot (recherche puis écriture groupée en fin de run), risquant de perdre tout le travail déjà fait en cas d'interruption sur un run à `max_profils` élevé. `SKILL.md` révisé : traitement strictement séquentiel et incrémental (étape 3 restructurée en 3a-3d), une mission est écrite sur disque dès qu'elle est validée, et un point de statut est donné à l'utilisateur après chaque profil plutôt qu'un seul rapport final. N'affecte aucun des fichiers `missions-*.md` déjà écrits lors de la vérification manuelle.
+- 2026-09-01 : Revue de code (4 couches, cf. Review Findings) — 14 patches appliqués : référence "Étape 5" cassée corrigée en 3c ; AC#3 de `epics.md` réaligné sur le format `missions-dev.md` réel (au lieu de `tips-linkedin/`) ; en-têtes `missions-dev.md`/`missions-data.md` généralisés hors banque ; ajout de règles explicites pour recherche à 0 résultat, échec du double fallback (MCP + chrome-devtools), parsing de durée hétérogène/mission en cours, normalisation du nom de branche et de l'URL avant dédup, calcul du N séquentiel, exemples pass/fail du seuil qualité, et un contrôle de cohérence secteur en 3b (déclenché par le cas réel Costantini/Eureka Education retenu à tort sous le filtre "éditeur de logiciel") ; fallback chrome-devtools étendu pour inclure `localisation` dans les mots-clés ; exemple d'invocation structurée ajouté à la description du frontmatter ; format `last_updated` de `sprint-status.yaml` corrigé. 1 point déféré (absence de test automatisé re-vérifiant dédup/qualité/écriture incrémentale — pattern pré-existant, voir `deferred-work.md`). Story passée en `done`.

@@ -220,7 +220,7 @@ Afin de disposer d'un corpus de références concrètes de missions professionne
 
 **Étant donné** une mission retenue
 **Quand** elle est enregistrée
-**Alors** elle est classée par branche métier dans `tools/linkedin-mcp/data/missions-realisees/missions-[branche].md` (un fichier par branche, ex. `missions-dev.md`, `missions-devops.md`, `missions-data.md`, `missions-securite.md` — créé à la volée selon les profils trouvés, pas de liste de branches fermée), structurée à l'identique des fichiers `tips-linkedin/` existants (texte de la mission, profil source, catégorie), enrichie des filtres identifiés quand disponibles (secteur, entreprise, compétences)
+**Alors** elle est classée par branche métier dans `tools/linkedin-mcp/data/missions-realisees/missions-[branche].md` (un fichier par branche, ex. `missions-dev.md`, `missions-devops.md`, `missions-data.md`, `missions-securite.md` — créé à la volée selon les profils trouvés, pas de liste de branches fermée), structurée sur le modèle déjà en place dans `missions-dev.md` (poste, entreprise/secteur, durée, description de la mission, stack technique, profil source avec URL) — un format plus détaillé que celui des fichiers `tips-linkedin/`, adapté au contenu plus riche d'une mission professionnelle
 
 **Étant donné** le contrôle strict des permissions MCP (NFR2)
 **Quand** ce scraping est exécuté
