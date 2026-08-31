@@ -25,3 +25,9 @@ Pipeline personnel de candidature : une extension Chrome copie une offre d'emplo
 - L'extension se charge séparément en "unpacked" dans Chrome (voir `extension/AGENTS.md`).
 
 <!-- /bmad:context -->
+
+## LinkedIn MCP — fallback Chrome DevTools MCP
+
+- Si le MCP LinkedIn (`mcp__mcp-server-linkedin__*`) bloque (ex. `No valid LinkedIn session is available in Docker` — la session Docker a expiré/est invalide, cf. logs serveur type `Feed auth check failed: net::ERR_TOO_MANY_REDIRECTS`), **ne pas arrêter la tâche en cours** : basculer directement sur le MCP chrome-devtools (`mcp__chrome-devtools__*`) pour continuer le scraping LinkedIn via le Chrome piloté par MCP (session déjà connectée de l'utilisateur dans son navigateur habituel).
+- Envoyer dans le chat une indication courte de ce que l'utilisateur peut faire pour relancer la session du MCP LinkedIn (ex. relancer le `--login` du serveur linkedin-mcp), **sans attendre cette action** — continuer la tâche en parallèle avec chrome-devtools.
+- En scrapant via chrome-devtools, noter les URLs exactes des pages visitées (profils, recherches, listes d'employés d'entreprise) pour pouvoir les rouvrir directement lors des prochaines sessions sans répéter la recherche.

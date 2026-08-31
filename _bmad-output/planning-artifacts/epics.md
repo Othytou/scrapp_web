@@ -136,26 +136,49 @@ Afin de pouvoir capturer une offre depuis n'importe lequel de ces sites sans ét
 
 Chef analyse le profil d'experts reconnus pour en tirer des conseils applicables (LinkedIn, Malt, CV), et peut transformer un post LinkedIn repéré dans son feed en offre capturée au même titre qu'un job-board classique.
 
-### Story 2.1: Analyse de profil expert et conseils applicables
+### Story 2.1: Conseils CV extraits des posts LinkedIn enregistrés
 
 En tant que Chef,
-Je veux soumettre le profil LinkedIn (ou Malt) d'un expert reconnu dans mon domaine et recevoir une liste de conseils concrets,
-Afin d'appliquer ces conseils à mon propre LinkedIn, mon profil Malt, ou mon CV.
+Je veux que le MCP LinkedIn extraie de mes posts enregistrés (saved posts) les conseils applicables à mon CV,
+Afin d'améliorer mon CV avec des conseils concrets, sans avoir à relire moi-même chaque post ni retomber sur les mêmes conseils à chaque relance.
 
 **Critères d'acceptation :**
 
-**Étant donné** un profil LinkedIn public d'un expert reconnu dans un domaine pertinent
-**Quand** Chef soumet ce profil via le MCP LinkedIn
-**Alors** l'analyse porte uniquement sur le contenu public du profil (titre, résumé, expériences mises en avant, posts publics) — jamais de données privées
-**Et** Chef reçoit une liste de conseils concrets, chacun étiqueté selon où l'appliquer (LinkedIn, Malt, ou CV)
+**Étant donné** les posts enregistrés par Chef sur `https://www.linkedin.com/my-items/saved-posts/`
+**Quand** Chef déclenche la récupération via le MCP LinkedIn (`get_saved_posts`)
+**Alors** chaque conseil identifié et pertinent pour le CV est extrait avec le texte du conseil, sa source, et l'URL du post d'origine quand le MCP parvient à la capturer, dans un fichier `.md` sous `tools/linkedin-mcp/data/tips-cv/`
 
-**Étant donné** le profil LinkedIn de Chef affiche plusieurs casquettes professionnelles (Full-Stack, DevOps, Réseau, IA/Data)
-**Quand** les conseils sont générés
-**Alors** ils restent cohérents avec cette multi-casquette plutôt que de supposer un profil mono-domaine
+**Étant donné** un post déjà traité lors d'un run précédent
+**Quand** le MCP est relancé
+**Alors** ce post n'est ni relu ni redupliqué dans le fichier de conseils, grâce à un fichier de suivi dédié (`tools/linkedin-mcp/data/tips-cv/posts-lus.md`) qui marque chaque post comme "Lu"
 
-**Étant donné** l'appel au MCP LinkedIn pour cette analyse
-**Quand** la requête est effectuée
-**Alors** elle reste ponctuelle et ciblée sur le profil demandé — pas de polling automatique, pas d'accès étendu au-delà de ce profil (NFR2)
+**Étant donné** le contrôle strict des permissions MCP (NFR2)
+**Quand** cette extraction est exécutée
+**Alors** elle reste une action ponctuelle déclenchée manuellement par Chef — pas de polling automatique des posts enregistrés
+
+**Note (2026-08-30) :** Story initiale ("Analyse de profil expert et conseils applicables") divisée en deux : cette story couvre uniquement le volet CV (FR5/FR6) ; la Story 2.1b couvre le volet Malt/freelance. L'approche technique retenue s'appuie sur les posts déjà enregistrés par Chef plutôt que sur la soumission ponctuelle du profil d'un expert nommé — choix validé par un spike de test manuel (`get_saved_posts` fonctionne et renvoie du contenu exploitable ; voir Dev Notes de la story détaillée pour les limites constatées, notamment sur la capture de l'URL de chaque post).
+
+### Story 2.1b: Conseils Malt / freelance extraits des posts LinkedIn enregistrés
+
+En tant que Chef,
+Je veux que le MCP LinkedIn extraie de mes posts enregistrés les conseils applicables à mon profil Malt et à ma pratique freelance (prospection, TJM, positionnement),
+Afin d'améliorer mon profil Malt et ma stratégie freelance avec des conseils concrets.
+
+**Critères d'acceptation :**
+
+**Étant donné** les posts enregistrés par Chef sur `https://www.linkedin.com/my-items/saved-posts/`
+**Quand** Chef déclenche la récupération via le MCP LinkedIn
+**Alors** chaque conseil identifié et pertinent pour Malt ou la pratique freelance est extrait avec le texte du conseil, sa source, et l'URL du post d'origine quand disponible, dans un fichier `.md` dédié sous `tools/linkedin-mcp/data/` (ex. `tips-malt/`)
+
+**Étant donné** que la Story 2.1 met déjà en place le mécanisme de récupération et de suivi des posts lus
+**Quand** cette story est implémentée
+**Alors** elle réutilise ce même mécanisme (appel MCP, fichier de suivi par empreinte) plutôt que d'en recréer un nouveau — seuls la catégorisation et le dossier de sortie diffèrent
+
+**Étant donné** le contrôle strict des permissions MCP (NFR2)
+**Quand** cette extraction est exécutée
+**Alors** elle reste une action ponctuelle déclenchée manuellement par Chef — pas de polling automatique des posts enregistrés
+
+**Note (2026-08-30) :** Story créée par division de la Story 2.1 initiale (voir note ci-dessus). Contenu précis des règles de catégorisation CV vs Malt/freelance volontairement non détaillé davantage — à affiner lors de la préparation détaillée si certains posts sont ambigus (ex. un conseil de négociation applicable aux deux volets).
 
 ### Story 2.2: Extraction d'offre depuis un post LinkedIn
 
@@ -178,6 +201,30 @@ Afin que cette offre alimente le même pipeline de capture que les job-boards cl
 **Alors** la soumission est manuelle (lien ou contenu fourni explicitement par Chef) — pas de surveillance automatique du feed, pour limiter le risque ToS
 
 **Note :** Choix "soumission manuelle" fait par défaut, en cohérence avec NFR2 (pas de polling). Le PRD (§9 Q3) laissait ce mécanisme ouvert entre soumission manuelle et surveillance de feed — à corriger si une autre approche est voulue.
+
+### Story 2.3: Corpus de missions bancaires réalisées, extraites de profils LinkedIn
+
+En tant que Chef,
+Je veux que le MCP LinkedIn recherche des profils de personnes ayant réalisé des missions dans des banques (CIC, Crédit Agricole, Société Générale, LCL, Banque Populaire) et en extraie les missions réalisées par domaine (dev, devops, data),
+Afin de disposer d'un corpus de références concrètes de missions bancaires, réutilisable pour enrichir mon CV et affiner mon positionnement freelance sur ce secteur.
+
+**Critères d'acceptation :**
+
+**Étant donné** un skill dédié invocable avec le nom d'une entreprise et un poste ou une compétence clé (ex. `/scrapp-profil-lk lcl dev python`)
+**Quand** Chef l'invoque
+**Alors** le skill utilise le MCP LinkedIn (`search_people`, `get_person_profile`) pour trouver des profils pertinents ayant travaillé dans l'entreprise donnée sur le poste/la compétence donnée, et en extrait les missions réalisées (description, stack technique, client si mentionné, durée quand disponible)
+
+**Étant donné** les missions extraites d'un profil
+**Quand** elles sont enregistrées
+**Alors** elles sont classées par domaine dans `tools/linkedin-mcp/data/missions-realisees/` — dev dans `missions-dev.md`, devops dans `missions-devops.md`, data dans `mission-data.md` — un fichier par domaine, structuré à l'identique des fichiers `tips-linkedin/` existants (texte de la mission, profil source, catégorie)
+
+**Étant donné** le contrôle strict des permissions MCP (NFR2)
+**Quand** ce scraping est exécuté
+**Alors** il reste une action ponctuelle déclenchée manuellement par Chef, ciblée sur un nombre limité de profils par run — pas de scraping massif ni de polling automatique
+
+**Note (2026-08-31) :** Story ajoutée en scope étendu d'Epic 2, au-delà de FR5/FR6/FR7 du PRD initial — dans l'esprit de FR5 (analyse de profils publics) mais appliquée à la constitution d'un corpus de missions bancaires réutilisables plutôt qu'à des conseils génériques. Décidée directement par Chef, sans passer par extraction PRD formelle. Un premier test manuel (3 profils, volet dev uniquement) a été effectué à la création de cette story pour valider l'approche — voir `tools/linkedin-mcp/data/missions-realisees/missions-dev.md` (dossier gitignoré via `tools/linkedin-mcp/data/`, donc pas de contrepartie `.example.md` nécessaire — cf. NFR1).
+
+**Note (2026-08-31) — fallback MCP LinkedIn → chrome-devtools :** Le MCP LinkedIn (Docker) a bloqué durant ce premier test (`No valid LinkedIn session is available in Docker` — session invalidée, logs serveur `Feed auth check failed: net::ERR_TOO_MANY_REDIRECTS`). Le test a été mené intégralement via le MCP chrome-devtools à la place (session LinkedIn déjà authentifiée dans le profil Chrome dédié), en naviguant directement sur les URLs de recherche (`/search/results/people/?keywords=...`) et de détail d'expérience (`/in/<slug>/details/experience/`) plutôt que via les tool calls `search_people`/`get_person_profile`. Règle de fallback ajoutée dans `AGENTS.md` (racine) : quand le MCP LinkedIn bloque, basculer sur chrome-devtools sans interrompre la tâche, et signaler à l'utilisateur comment relancer la session LinkedIn MCP en parallèle.
 
 ## Epic 3: CRM & Analytics
 
