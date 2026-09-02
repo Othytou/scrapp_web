@@ -230,6 +230,36 @@ Afin de disposer d'un corpus de références concrètes de missions professionne
 
 **Note (2026-08-31) — fallback MCP LinkedIn → chrome-devtools :** Le MCP LinkedIn (Docker) a bloqué durant ce premier test (`No valid LinkedIn session is available in Docker` — session invalidée, logs serveur `Feed auth check failed: net::ERR_TOO_MANY_REDIRECTS`). Le test a été mené intégralement via le MCP chrome-devtools à la place (session LinkedIn déjà authentifiée dans le profil Chrome dédié), en naviguant directement sur les URLs de recherche (`/search/results/people/?keywords=...`) et de détail d'expérience (`/in/<slug>/details/experience/`) plutôt que via les tool calls `search_people`/`get_person_profile`. Règle de fallback ajoutée dans `AGENTS.md` (racine) : quand le MCP LinkedIn bloque, basculer sur chrome-devtools sans interrompre la tâche, et signaler à l'utilisateur comment relancer la session LinkedIn MCP en parallèle.
 
+### Story 2.4: Couverture missions par hard skill (skill `lk-hard-skill-missions`)
+
+En tant que Chef,
+Je veux un skill qui vérifie, pour chaque hard skill de mon référentiel (`template/hard_skills.html`), le nombre de missions qui le mettent en valeur dans mon corpus (`missions-realisees/`), et qui peut relancer `lk-scrapp-experiences` ciblé sur un hard skill sous-représenté,
+Afin d'identifier rapidement mes hard skills les moins valorisés et de combler l'écart mission par mission, plutôt que de deviner au hasard lesquels manquent de preuves concrètes.
+
+**Critères d'acceptation :**
+
+**Étant donné** le référentiel `template/hard_skills.html` (~227 hard skills répartis en catégories — Langages & Frameworks, Backend & API, DevOps & Cloud, Sécurité & DevSecOps, etc. —, certaines lignes regroupant plusieurs skills séparés par virgule, ex. "Django, FastAPI, Flask")
+**Quand** le skill `lk-hard-skill-missions` est invoqué (première construction ou rafraîchissement)
+**Alors** il construit/actualise une table de suivi dans `tools/linkedin-mcp/data/hard-skills-missions.md`, une ligne par hard skill individuel (les regroupements virgule sont éclatés en lignes séparées), avec au minimum : nom du hard skill (tel que référencé dans `hard_skills.html`), catégorie d'origine, nombre de missions rattachées, statut, et références courtes vers les missions rattachées (fichier + numéro d'entrée dans `missions-realisees/missions-[branche].md`, ex. `missions-devops.md#3`)
+
+**Étant donné** les fichiers `missions-realisees/missions-*.md` déjà existants
+**Quand** la table est construite ou actualisée
+**Alors** le skill associe d'abord les missions déjà présentes à chaque hard skill en recherchant sa mention dans le champ "Stack technique" de chaque entrée, avant toute nouvelle recherche LinkedIn — une même mission peut être rattachée à plusieurs hard skills simultanément
+
+**Étant donné** un hard skill avec moins de 3 missions rattachées
+**Quand** Chef consulte la table et demande explicitement de combler l'écart pour ce hard skill (ou un petit lot de hard skills qu'il choisit lui-même)
+**Alors** le skill invoque `lk-scrapp-experiences` avec `competence: <hard skill>` pour ce(s) hard skill(s) précisément — jamais de déclenchement automatique sur l'ensemble des hard skills sous le seuil, pour rester cohérent avec NFR2 (pas de scraping massif)
+
+**Étant donné** une nouvelle mission trouvée et rattachée à un hard skill
+**Quand** la table de suivi est mise à jour
+**Alors** la mise à jour se fait ligne par ligne, sans réécriture intégrale du fichier, pour ne pas perdre la progression déjà enregistrée si le run est interrompu — même principe de résilience incrémentale que `lk-scrapp-experiences`
+
+**Étant donné** le nombre de missions rattachées à un hard skill
+**Quand** son statut est affiché dans la table
+**Alors** il utilise un nom de statut explicite et distinct selon le seuil : **Couvert** (≥ 3 missions), **Partiel** (1-2 missions), **À traiter** (0 mission) — pas de booléen fait/pas fait
+
+**Note (2026-09-02) :** Story ajoutée à la demande de Chef, en complément direct de la Story 2.3 — réutilise le corpus `missions-realisees/` et le skill `lk-scrapp-experiences` plutôt que de créer un nouveau mécanisme de scraping. Décisions actées avec Chef : (1) table Markdown plutôt que sections détaillées par hard skill — 227 entrées en prose seraient illisibles, et le détail des missions vit déjà dans `missions-realisees/`, la table n'a besoin que de pointer vers ces entrées ; (2) nom du skill `lk-hard-skill-missions` (préfixe `lk-` désormais standard pour les skills LinkedIn de ce projet, cf. Story 2.3).
+
 ## Epic 3: CRM & Analytics
 
 Chef consulte une vue exploitable de ses candidatures et de leurs réponses pour ajuster sa stratégie dans la durée, construite sur le CRM Postgres (`Application`/`ApplicationEvent`) déjà en place.

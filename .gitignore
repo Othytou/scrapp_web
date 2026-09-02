@@ -37,6 +37,7 @@ pdf/**/*.pdf
 !.claude/skills/generate-cv
 !.claude/skills/generate-detailled-cv
 !.claude/skills/lk-scrapp-experiences
+!.claude/skills/lk-hard-skill-missions
 
 _bmad
 
