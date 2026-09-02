@@ -35,7 +35,11 @@ Lis le fichier en entier. Il est structuré en groupes `<div class="skill-group-
 
 Le nom de groupe (`skill-group-title`) devient la colonne **Catégorie** de chaque hard skill qu'il contient.
 
-**Résultat attendu avec le référentiel actuel (~227 lignes brutes) : 239 hard skills individuels** après éclatement (11 catégories). Si ce nombre change fortement lors d'un futur run, c'est probablement que `hard_skills.html` a été modifié — pas une erreur du skill.
+**Préfixe `_` — marqueur "cible mission" (décision explicite de Chef) :** dans `template/hard_skills.html`, une ligne peut commencer par `_` (ex. `_Python`, `_Kafka`) — ça signifie que ce hard skill (ou ce groupe, si la ligne contient plusieurs hard skills séparés par virgule/slash — le préfixe s'applique alors à tout le groupe) **mérite un détail de mission dédié** : assez central pour porter sa propre mission dans le corpus et, à terme, sur la page 2 du CV détaillé — par opposition à un hard skill qui reste un simple tag (pattern abstrait, détail de protocole, outil de dev, sous-composant d'une plateforme déjà marquée, pratique transverse déjà couverte ailleurs). **Retire le `_` avant tout traitement** (matching, affichage, colonne Hard skill de la table) — il ne fait jamais partie du nom réel — mais retiens si la ligne d'origine en avait un : ça alimente la colonne **Cible mission** de la table (étape 4) et la priorisation de l'étape 5. Un hard skill sans `_` reste suivi normalement (compté, statut calculé) — l'absence de préfixe ne l'exclut pas de la table, contrairement à `Securité (Cyber)` ; elle indique juste qu'il n'est pas prioritaire pour un développement dédié.
+
+**Catégorie exclue du suivi :** `Securité (Cyber)` (OSINT, pentest, SOC/SIEM, exploit dev, etc.) n'entre jamais dans la table ni dans les propositions de comblement — décision explicite de Chef : pas de missions à constituer sur ce périmètre (SOC/pentester), profil non ciblé pour ce type de mission. Ne pas confondre avec `Sécurité & DevSecOps` (DAST/SAST, hardening, RGPD, scanning...), qui reste dans le périmètre normal du suivi.
+
+**Résultat attendu avec le référentiel actuel (~227 lignes brutes, hors catégorie exclue) : 239 hard skills individuels** après éclatement (10 catégories suivies). Si ce nombre change fortement lors d'un futur run, c'est probablement que `hard_skills.html` a été modifié — pas une erreur du skill.
 
 ## Étape 2 — Scanner le corpus `missions-realisees/missions-*.md`
 
@@ -80,9 +84,13 @@ Statut : **Couvert** (≥ 3 missions) / **Partiel** (1-2) / **À traiter** (0). 
 skill "À traiter" ou "Partiel", demander explicitement d'invoquer
 `lk-scrapp-experiences competence:<hard skill>` (jamais automatique).
 
-| Hard skill | Catégorie | Missions | Statut | Références |
-|---|---|---:|---|---|
-| Python | Langages & Frameworks | 2 | Partiel | missions-dev.md#1, missions-dev.md#4 |
+Cible mission : **Oui** si la ligne du référentiel portait le préfixe `_` (ce hard skill mérite un
+détail de mission dédié) / **Non** sinon (reste un simple tag, pas de développement dédié
+nécessaire). Priorise toujours "Cible mission = Oui" pour décider quoi combler en premier.
+
+| Hard skill | Catégorie | Missions | Statut | Cible mission | Références |
+|---|---|---:|---|---|---|
+| Python | Langages & Frameworks | 2 | Partiel | Oui | missions-dev.md#1, missions-dev.md#4 |
 ...
 ```
 
@@ -101,6 +109,7 @@ HARD_SKILLS_HTML = os.path.join(REPO_ROOT, "template/hard_skills.html")
 MISSIONS_DIR = os.path.join(REPO_ROOT, "tools/linkedin-mcp/data/missions-realisees")
 OUTPUT = os.path.join(REPO_ROOT, "tools/linkedin-mcp/data/hard-skills-missions.md")
 
+EXCLUDED_CATEGORIES = {"Securité (Cyber)"}
 SLASH_NOSPACE_KEEP_WHOLE = {"CI/CD", "TCP/IP", "HTTP/HTTPS", "A/B Testing", "DAST/SAST", "IDS/IPS", "LAN/WAN"}
 SLASH_SPLIT_NO_SPACE = {"Netmiko/NAPALM"}
 # NOTE : split_line() ne gère pas le cas (actuellement absent du référentiel) d'un même segment
@@ -137,15 +146,20 @@ def parse_hard_skills(path):
         parts = b.split("\n", 1)
         title_line, rest = parts[0], (parts[1] if len(parts) > 1 else "")
         category = title_line.strip()
+        if category in EXCLUDED_CATEGORIES:
+            continue
         for line in rest.split("\n"):
             line = line.strip()
             if not line or line.startswith("<div") or line.startswith("</div"):
                 continue
+            target = line.startswith("_")
+            if target:
+                line = line[1:].strip()
             for name in split_line(line):
                 key = (category, name)
                 if key not in seen:
                     seen.add(key)
-                    skills.append(key)
+                    skills.append((category, name, target))
     return skills
 
 ENTRY_RE = re.compile(r"^## (\d+)\.", re.MULTILINE)
@@ -172,12 +186,12 @@ skills = parse_hard_skills(HARD_SKILLS_HTML)
 entries = parse_missions(MISSIONS_DIR)
 
 rows = []
-for category, name in skills:
+for category, name, target in skills:
     pattern = word_boundary_pattern(name)
     refs = [f"{b}#{n}" for b, n, s in entries if s and pattern.search(s)]
     count = len(refs)
     status = "Couvert" if count >= 3 else ("Partiel" if count >= 1 else "À traiter")
-    rows.append((category, name, count, status, refs))
+    rows.append((category, name, count, status, target, refs))
 
 intro = (
     "Table générée/actualisée par le skill `lk-hard-skill-missions`. Une ligne par hard skill "
@@ -187,16 +201,22 @@ intro = (
     "prises en compte).\n\n"
     "Statut : **Couvert** (≥ 3 missions) / **Partiel** (1-2) / **À traiter** (0). Pour combler un "
     "hard skill \"À traiter\" ou \"Partiel\", demander explicitement d'invoquer "
-    "`lk-scrapp-experiences competence:<hard skill>` (jamais automatique)."
+    "`lk-scrapp-experiences competence:<hard skill>` (jamais automatique).\n\n"
+    "Cible mission : **Oui** si la ligne du référentiel portait le préfixe `_` (mérite un détail "
+    "de mission dédié) / **Non** sinon (reste un simple tag). Priorise toujours \"Oui\" pour "
+    "décider quoi combler en premier."
 )
 lines = ["# Suivi missions par hard skill", "", intro, "",
-         "| Hard skill | Catégorie | Missions | Statut | Références |", "|---|---|---:|---|---|"]
-for category, name, count, status, refs in rows:
-    lines.append(f"| {name} | {category} | {count} | {status} | {', '.join(refs) if refs else '—'} |")
+         "| Hard skill | Catégorie | Missions | Statut | Cible mission | Références |",
+         "|---|---|---:|---|---|---|"]
+for category, name, count, status, target, refs in rows:
+    lines.append(f"| {name} | {category} | {count} | {status} | {'Oui' if target else 'Non'} | "
+                  f"{', '.join(refs) if refs else '—'} |")
 
 open(OUTPUT, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 print(f"{len(rows)} hard skills — {sum(1 for r in rows if r[3]=='Couvert')} Couvert, "
-      f"{sum(1 for r in rows if r[3]=='Partiel')} Partiel, {sum(1 for r in rows if r[3]=='À traiter')} À traiter")
+      f"{sum(1 for r in rows if r[3]=='Partiel')} Partiel, {sum(1 for r in rows if r[3]=='À traiter')} À traiter "
+      f"— {sum(1 for r in rows if r[4])} marqués Cible mission")
 ```
 
 ### Cas B — la table existe déjà (rafraîchissement / mise à jour ciblée)
@@ -215,7 +235,7 @@ Ce skill ne scanne/affiche jamais tout seul une invitation à scraper — **c'es
 
 Quand Chef demande de combler un hard skill (ex. "comble Jenkins", "trouve des missions pour SonarQube et Trivy") :
 
-1. **Valide d'abord le(s) nom(s) demandé(s)** contre la table (ou, si elle n'existe pas encore, contre le référentiel éclaté de l'étape 1). Si un nom ne correspond à aucun hard skill connu (typo probable), ne lance pas de recherche LinkedIn pour ce nom — signale-le à Chef et propose le(s) nom(s) le(s) plus proche(s) trouvé(s) dans la table, ou demande une correction.
+1. **Valide d'abord le(s) nom(s) demandé(s)** contre la table (ou, si elle n'existe pas encore, contre le référentiel éclaté de l'étape 1). Si un nom ne correspond à aucun hard skill connu (typo probable), ne lance pas de recherche LinkedIn pour ce nom — signale-le à Chef et propose le(s) nom(s) le(s) plus proche(s) trouvé(s) dans la table, ou demande une correction. Si Chef demande une suggestion plutôt qu'une liste précise (ex. "qu'est-ce qu'on comble en priorité ?"), propose d'abord des hard skills "Cible mission = Oui" en "À traiter"/"Partiel" — jamais un hard skill "Cible mission = Non", qui n'a pas besoin de développement dédié.
 2. **Garde-fou sur la taille du lot** : si le lot validé dépasse 5 hard skills en une seule demande, ne lance pas tout automatiquement — indique à Chef le volume de recherches LinkedIn que cela représenterait (un run `lk-scrapp-experiences` complet par hard skill) et demande confirmation explicite avant de continuer, ou suggère de procéder par lots plus petits. Ceci s'applique même si Chef a explicitement demandé "tous les hard skills à traiter" ou une liste large — une demande explicite mais non bornée reproduirait le scraping massif que NFR2 vise à éviter.
 3. Pour chaque hard skill validé du lot, invoque `lk-scrapp-experiences` avec `competence: <hard skill>` (les autres filtres de `lk-scrapp-experiences` — `poste`, `secteur`, `max_profils`, etc. — restent à la discrétion de Chef s'il les précise ; sinon laisse `lk-scrapp-experiences` appliquer ses propres défauts).
 4. `lk-scrapp-experiences` écrit lui-même dans `missions-realisees/missions-[branche].md` (potentiellement un nouveau fichier de branche). Ne réimplémente jamais cette logique ici. **Si l'invocation échoue ou s'interrompt** (erreur, session LinkedIn inutilisable même avec le fallback chrome-devtools) : signale l'échec explicitement à Chef pour ce hard skill — ne le confonds pas avec le cas "0 nouvelle mission trouvée" (point 6), ce sont deux situations différentes.
@@ -225,7 +245,7 @@ Quand Chef demande de combler un hard skill (ex. "comble Jenkins", "trouve des m
 ## Étape 6 — Rapporter
 
 À la fin de chaque exécution (construction initiale, rafraîchissement, ou comblement ciblé), indique à Chef :
-- Nombre total de hard skills dans la table, et répartition Couvert / Partiel / À traiter.
+- Nombre total de hard skills dans la table, répartition Couvert / Partiel / À traiter, et combien de hard skills "Cible mission = Oui" restent en Partiel/À traiter (c'est ce sous-ensemble qui compte vraiment pour prioriser).
 - Pour un comblement ciblé : hard skill(s) demandé(s), nombre de nouvelles missions trouvées et rattachées, nouveau statut, et signalement explicite si le statut n'a pas bougé faute de résultat, si un nom demandé était invalide, ou si `lk-scrapp-experiences` a échoué pour un hard skill du lot.
 - Entrées `missions-*.md` rencontrées sans champ "Stack technique" exact (non prises en compte dans le matching), s'il y en a — pour que Chef puisse les corriger s'il le souhaite.
 

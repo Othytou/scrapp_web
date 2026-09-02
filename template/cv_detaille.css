@@ -222,6 +222,12 @@
 		margin-top: 3px;
 	}
 
+	.entry-sector {
+		font-size: 0.65rem;
+		color: var(--ink-muted);
+		margin-top: 1px;
+	}
+
 	.entry-location {
 		font-size: 0.65rem;
 		color: var(--ink-muted);

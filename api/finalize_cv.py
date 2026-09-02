@@ -53,7 +53,7 @@ async def main():
         cv_context = extract_cv_context(soup)
         patched_soup = apply_patch(soup, patch, cv_context)
 
-        filename = build_output_filename(application.company, application.position)
+        filename = build_output_filename(application.company)
         if CV_TYPE == "court":
             # Suffixe plutôt que sous-dossier séparé : garde output/ et pdf/ à plat pour
             # que le <link> relatif vers ../template/*.css reste valide dans tous les cas.

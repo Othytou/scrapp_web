@@ -1,3 +1,4 @@
+import os
 import re
 import unicodedata
 import logging
@@ -34,11 +35,13 @@ def slugify(value: str, max_length: int = 40) -> str:
     return value[:max_length]
 
 
-def build_output_filename(company: str, position: str) -> str:
+CANDIDATE_SLUG = os.getenv("CANDIDATE_SLUG", "candidat")
+
+
+def build_output_filename(company: str) -> str:
     """
     Construit le nom du fichier HTML de sortie.
-    ex: cv_la-poste_developpeur-python.html
+    ex: cv_la-poste_<CANDIDATE_SLUG>.html
     """
     company_slug = slugify(company)
-    position_slug = slugify(position)
-    return f"cv_{company_slug}_{position_slug}.html"
+    return f"cv_{company_slug}_{CANDIDATE_SLUG}.html"

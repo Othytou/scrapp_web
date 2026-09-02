@@ -54,6 +54,7 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
     patch = {
         "header_title": "...",
         "summary": "...",
+        "location": "...",
         "highlight_skills": ["python", "django"],
         "hide_skills": ["flutter", "flutterflow"],
         "inject_skills": {"tags-langages": ["fastapi"]},
@@ -79,6 +80,14 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
         if el:
             el.string = patch["summary"]
             logger.info("Summary mis à jour")
+
+    # 2b. Localisation (remplace "Télétravail · Présentiel · International" par la ville
+    # de l'offre, ou la grande ville la plus proche pour une commune de banlieue/périphérie)
+    if patch.get("location"):
+        el = soup.find(id="cv-mobility")
+        if el:
+            el.string = patch["location"]
+            logger.info(f"Localisation → {patch['location']}")
 
     # 3. Réécriture des bullets
     rewrite_bullets = patch.get("rewrite_bullets", [])
@@ -152,6 +161,13 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
             label = labels.get(skill_key, skill_key.replace("-", " ").title())
             new_tag = soup.new_tag("span", attrs={"class": "tag injected", "data-skill": skill_key})
             new_tag.string = label
+            if container.find("span", class_="tag"):
+                # Sépare les tags par un espace réel : contrairement aux tags statiques du
+                # template (séparés par l'indentation HTML, donc déjà par un noeud texte),
+                # .append() ici colle les spans sans rien entre eux — un parseur ATS qui
+                # concatène le texte par ordre de flux plutôt que par coordonnées produirait
+                # "PythonDjangoPHP" sans ce séparateur.
+                container.append(" ")
             container.append(new_tag)
             injected.append(skill_key)
 

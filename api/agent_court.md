@@ -29,8 +29,9 @@ attendu ou directement lié à l'offre — jamais un inventaire complet.
 
 ## Ce que tu dois produire
 
-Fichier HTML nommé `cv_{company-slug}_{position-slug}.html` — mêmes règles de nommage
-que le CV détaillé (minuscules, tirets, sans accents, max 60 caractères).
+Fichier HTML nommé `cv_{company-slug}_{candidate-slug}.html` — mêmes règles de nommage
+que le CV détaillé (minuscules, tirets, sans accents pour le slug d'entreprise, max 60
+caractères, `{candidate-slug}` vient de `CANDIDATE_SLUG` en `.env`, jamais en dur).
 
 ---
 
@@ -76,11 +77,20 @@ le conteneur de sa catégorie :
 **Règle stricte :** une compétence absente de `CV_SKILLS_POOL.hidden` ne doit jamais être
 injectée, même si l'offre la demande — elle va dans `unmatched_skills` (voir plus bas).
 
-### 3. Mettre à jour `#cv-header-title` et `#cv-summary`
+**Outil IA de développement — toujours injecter un et un seul outil :**
+Injecter `claude-code` dans `tags-court-outils` par défaut, même si l'offre ne mentionne
+aucun outil IA — c'est l'outil de référence du profil. Si l'offre nomme explicitement un
+autre outil du pool (`github-copilot`, `cursor`, `openai-api`, `langchain`, `rag`, `llm`,
+`genai`, `mlops`), injecter celui-là **à la place** de `claude-code`, pas en plus — un seul
+outil IA affiché, celui qui correspond le mieux à l'offre.
 
-Mêmes règles que le CV détaillé (`agent_detaille.md`, étapes 2-3) : sous-titre adapté au
-poste, résumé de 2-3 phrases reprenant les termes exacts de l'offre, toujours terminer par
-"Disponible immédiatement."
+### 3. Mettre à jour `#cv-header-title`, `#cv-mobility` et `#cv-summary`
+
+Mêmes règles que le CV détaillé (`agent_detaille.md`, étapes 2, 2b, 3) : **un seul intitulé de
+poste** en header title (jamais une liste de spécialités séparées par `·`), `location` mis à jour
+avec la ville de référence de l'offre (grande ville la plus proche si banlieue/périphérie, ne pas
+toucher si non déductible), résumé de 2-3 phrases reprenant les termes exacts de l'offre, toujours
+terminer par "Disponible immédiatement."
 
 ### 4. Règle ATS
 
@@ -119,7 +129,9 @@ qui contient au moins un bullet en lien avec l'offre (direct ou adjacent, cf. é
 
 Sur les bullets conservés : `highlight_bullets` si le keyword matche l'offre,
 `rewrite_bullets` si la formulation peut coller aux termes exacts de l'offre (mêmes règles
-que `agent_detaille.md`, ne jamais inventer une responsabilité inexistante).
+que `agent_detaille.md`, ne jamais inventer une responsabilité inexistante) — y compris la
+règle de quantification (`agent_detaille.md`, étape 8, "Chiffrer au moins un bullet par
+expérience") : un bullet chiffré par expérience visible, jamais tous, jamais inventé.
 
 ### 7. Soft Skills
 
@@ -156,8 +168,9 @@ ce qui ne s'applique pas.
 
 ```json
 {
-  "header_title": "Domaine principal · Spécialité 1 · Spécialité 2",
+  "header_title": "Intitulé unique du poste visé",
   "summary": "2-3 phrases. Toujours terminer par Disponible immédiatement.",
+  "location": "Ville de référence de l'offre, ou \"\" si non déductible",
   "highlight_skills": [],
   "inject_skills": [
     {"container_id": "tags-court-langages", "skills": ["python", "django"]}
