@@ -260,6 +260,48 @@ Afin d'identifier rapidement mes hard skills les moins valorisés et de combler 
 
 **Note (2026-09-02) :** Story ajoutée à la demande de Chef, en complément direct de la Story 2.3 — réutilise le corpus `missions-realisees/` et le skill `lk-scrapp-experiences` plutôt que de créer un nouveau mécanisme de scraping. Décisions actées avec Chef : (1) table Markdown plutôt que sections détaillées par hard skill — 227 entrées en prose seraient illisibles, et le détail des missions vit déjà dans `missions-realisees/`, la table n'a besoin que de pointer vers ces entrées ; (2) nom du skill `lk-hard-skill-missions` (préfixe `lk-` désormais standard pour les skills LinkedIn de ce projet, cf. Story 2.3).
 
+### Story 2.5: Génération d'expériences CV personnalisées à partir du corpus de missions (skill `generate-mission-cv`)
+
+En tant que Chef,
+Je veux un skill `generate-mission-cv` qui compose une expérience CV pour une mission réelle que j'ai effectuée, en s'inspirant du corpus `missions-realisees/` pour la formulation et le choix des hard skills à valoriser, et qui peut ensuite intégrer une mission validée directement dans les templates CV,
+Afin d'obtenir des expériences CV mieux argumentées et alignées sur mes hard skills réels, sans deviner moi-même la formulation, et sans devoir ressaisir manuellement le contenu une fois validé.
+
+**Critères d'acceptation :**
+
+**Étant donné** un skill dédié nommé `generate-mission-cv`
+**Quand** Chef l'invoque avec au minimum le nom du client/employeur réel (ex. "CIC") et un contexte de mission (ex. "dev Python"), et optionnellement d'autres critères (secteur, poste, stack visée, hard skills à cibler)
+**Alors** le skill sélectionne les missions pertinentes dans `tools/linkedin-mcp/data/missions-realisees/missions-*.md` (toutes branches confondues si pertinent) comme références de structure et de formulation
+
+**Étant donné** la table `tools/linkedin-mcp/data/hard-skills-missions.md` (produite par `lk-hard-skill-missions`)
+**Quand** le skill compose l'expérience
+**Alors** il la consulte pour identifier les hard skills réels de Chef pertinents pour ce client/contexte, **quel que soit leur statut** (Couvert, Partiel ou À traiter — renforcer un hard skill déjà bien couvert est aussi valide, la table sert de référence de pertinence, pas de filtre)
+
+**Étant donné** un même client pour lequel Chef demande plusieurs missions distinctes (ex. "CIC dev Python" puis, séparément, "CIC DevOps")
+**Quand** chaque nouvelle mission est générée
+**Alors** elle s'ajoute comme nouvelle entrée numérotée dans le fichier unique de ce client, `tools/linkedin-mcp/data/missions-generees/<client-slug>.md` (un fichier par client, jamais par mission — même logique d'append que `missions-realisees/missions-*.md`) — une nouvelle génération n'écrase jamais une entrée déjà présente pour ce client
+
+**Étant donné** les missions de référence sélectionnées
+**Quand** le skill rédige le brouillon
+**Alors** il produit une expérience synthétisée combinant bullets/formulations de plusieurs missions de référence, avec substitution de stack équivalente et enrichissement plausible cohérent avec le profil de Chef — sans jamais changer le client/employeur fourni par Chef — portant un champ `**ETAT :**` juste après `**Mission :**` (avant les bullets de réalisations), valeur par défaut **"Brouillon — ne pas utiliser comme référence pour la génération de CV"**, avec la liste des missions sources utilisées (fichier + référence d'entrée) pour traçabilité
+
+**Étant donné** un brouillon que Chef a relu et validé explicitement (ex. "valide et intègre la mission CIC dev Python")
+**Quand** Chef déclenche cette intégration
+**Alors** le skill intègre la mission dans les templates réels :
+- **Page patchable (`template/my_template_cv_court.html` et `template/my_template_cv_detaille.html`)** : ajoute l'expérience selon les conventions de markup existantes (`.entry`/`id="exp-N"`, `data-company`, `entry-bullets` avec `data-keywords`) — nouvelle entrée ou bullets ajoutés à une entrée freelance existante selon le cas, décision affinée en préparation détaillée de la story
+- **Page 2 statique du CV détaillé (`template/my_template_cv_detaille.html`, section "Missions & Réalisations Détaillées")** : ajoute un `.mission-item` dans le `.mission-block` du domaine correspondant s'il existe déjà (stack cohérente), sinon crée un nouveau `.mission-block`
+
+**Étant donné** cette intégration
+**Quand** elle a lieu
+**Alors** elle reste une action explicite et séparée de la génération du brouillon — jamais automatique dès la génération — cohérent avec la règle existante "ne jamais inventer d'expérience" du pipeline de patch (`api/agent_detaille.md`), qui ne s'applique qu'à des données déjà validées
+
+**Étant donné** le contrôle des permissions MCP (NFR2)
+**Quand** le corpus `missions-realisees/` est insuffisant pour le secteur/hard skill visé
+**Alors** le skill le signale à Chef plutôt que de déclencher lui-même `lk-scrapp-experiences`
+
+**Note (2026-09-03) :** Story ajoutée à la demande de Chef, en complément des Stories 2.3/2.4. Décisions actées : (1) client toujours réel, dates/périmètre/stack proposés à partir du corpus et validés par Chef ; (2) plusieurs missions distinctes possibles pour un même client, toutes dans le même fichier `missions-generees/<client-slug>.md` en entrées numérotées append-only, jamais un fichier par mission, jamais d'écrasement d'une entrée existante ; (3) la table `hard-skills-missions.md` sert de référence de pertinence sans filtrer par statut ; (4) une fois validée, la mission s'intègre réellement dans `template/my_template_cv_court.html`/`my_template_cv_detaille.html` (page patchable + section statique "Missions & Réalisations Détaillées"), rendant la mission disponible pour `generate-cv`/`generate-detailled-cv` — intégration déclenchée explicitement par Chef, jamais automatique ; (5) skill nommé `generate-mission-cv` (pas de préfixe `lk-`, cohérent avec `generate-cv`/`generate-detailled-cv`).
+
+**Note (2026-09-03, révision) :** Format de sortie précisé après retour de Chef sur la première rédaction : un fichier unique par client (pas par mission), et un champ `**ETAT :**` inline sur chaque entrée (`Brouillon` par défaut, `Validé — intégré le JJ/MM/AAAA` après intégration template) plutôt qu'un marquage global de fichier — permet à une entrée validée de redevenir une référence légitime pour de futures générations, au même titre que `missions-realisees/`.
+
 ## Epic 3: CRM & Analytics
 
 Chef consulte une vue exploitable de ses candidatures et de leurs réponses pour ajuster sa stratégie dans la durée, construite sur le CRM Postgres (`Application`/`ApplicationEvent`) déjà en place.
