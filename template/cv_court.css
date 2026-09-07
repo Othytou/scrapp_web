@@ -182,6 +182,10 @@
 	/* Section */
 	.section {
 		margin-top: 20px;
+	}
+
+	/* Bloc insécable (ex. Formation et Certification) — jamais coupé entre 2 pages. */
+	.section-nosplit {
 		break-inside: avoid;
 		page-break-inside: avoid;
 	}
@@ -331,7 +335,13 @@
 			margin: 0;
 			box-shadow: none;
 			width: 210mm;
-			min-height: 297mm;
+			height: 297mm;
+			overflow: hidden;
+		}
+
+		/* .page déjà pré-découpées en hauteur A4 par pagination.js — un saut par page. */
+		.page:not(:last-child) {
+			break-after: page;
 		}
 	}
 

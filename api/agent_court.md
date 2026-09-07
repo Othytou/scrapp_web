@@ -133,6 +133,11 @@ que `agent_detaille.md`, ne jamais inventer une responsabilité inexistante) —
 règle de quantification (`agent_detaille.md`, étape 8, "Chiffrer au moins un bullet par
 expérience") : un bullet chiffré par expérience visible, jamais tous, jamais inventé.
 
+**Le bullet chiffré doit remonter en tête de son `<ul>`** (même règle que `agent_detaille.md`,
+étape 8) : sur l'entrée `rewrite_bullets` du bullet chiffré, ajoute `"move_to_top": true` —
+`html_patcher.py` le déplace en première position de la liste. N'ajoute `move_to_top` que sur
+le bullet réellement chiffré.
+
 ### 7. Soft Skills
 
 Mêmes règles que le CV détaillé : "Autonome" et "Force de proposition" obligatoires,
@@ -183,7 +188,8 @@ ce qui ne s'applique pas.
       "ul_id": "exp-0-bullets",
       "index": 2,
       "new_text": "Nouveau texte du bullet reformulé",
-      "new_keywords": "python,automation,api"
+      "new_keywords": "python,automation,api",
+      "move_to_top": false
     }
   ],
   "soft_skills": ["Autonome", "Force de proposition"],
@@ -193,3 +199,7 @@ ce qui ne s'applique pas.
 
 `highlight_skills` reste dans le schéma pour compatibilité avec `html_patcher.py` mais n'a
 pas d'usage réel ici : rien n'est affiché par défaut, donc rien à highlighter — laisser `[]`.
+
+`rewrite_bullets[].move_to_top` : optionnel (défaut `false`) — mets `true` uniquement sur le
+bullet chiffré (étape 6) pour qu'il passe en première position de son `<ul>` ; jamais sur une
+réécriture non chiffrée.

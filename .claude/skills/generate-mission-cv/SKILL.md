@@ -44,12 +44,21 @@ Slug = kebab-case du **nom du client uniquement**, normalisé : retire apostroph
 - **Corpus insuffisant (arrêt total)** : si **rien du tout** n'est pertinent (aucune mission de référence utilisable dans `missions-realisees/`/entrées `Validé`, et aucun hard skill du secteur/contexte demandé dans `hard-skills-missions.md`), **arrête-toi et signale-le clairement à Chef** — quels filtres/contexte ont été cherchés, ce qui manque — puis propose explicitement de relancer `lk-scrapp-experiences` **manuellement** (donne la commande/l'invocation suggérée). Ne déclenche jamais `lk-scrapp-experiences` toi-même dans ce skill.
 - **Insuffisance partielle (ne bloque pas)** : si le contexte/secteur a des missions de référence exploitables mais que le **hard skill précis demandé** n'a de correspondance directe ni de substitution plausible nulle part dans le corpus (missions-realisees/ ni hard-skills-missions.md), ne t'arrête pas — compose le brouillon avec ce qui est effectivement pertinent, et signale explicitement dans le rapport (1f) que ce hard skill précis n'a pas pu être mis en avant faute de référence exploitable. L'arrêt total (paragraphe précédent) ne s'applique que si rien n'est exploitable du tout pour le contexte demandé.
 
+### 1c-bis. Faire choisir les hard skills à Chef (jamais de choix autonome)
+
+- **Ne choisis jamais seul** quel(s) hard skill(s)/framework(s) secondaire(s) mettre en avant ou substituer si Chef ne les a pas explicitement nommés dans sa demande. "Python et Django" est explicite (pas besoin de redemander). "Python en principale" seul, sans framework/outil secondaire précisé, est implicite — il faut demander avant de composer quoi que ce soit.
+- Présente à Chef une liste courte des hard skills candidats les plus pertinents pour le contexte demandé, tirés de `hard-skills-missions.md` (nom, statut Couvert/Partiel/À traiter, Cible mission), et demande-lui lesquels il veut prioriser. Pour une demande visant plusieurs missions en une fois, pose la question une seule fois pour l'ensemble et demande la répartition souhaitée (quel hard skill pour quelle mission, ou l'ensemble à utiliser si Chef ne veut pas trancher mission par mission).
+- N'utilise pour l'étape 1d que les hard skills explicitement choisis par Chef (dans sa demande initiale ou dans sa réponse à cette question) — jamais d'ajout autonome d'un hard skill supplémentaire non demandé, même s'il semble pertinent ou bien couvert par le corpus.
+- Cette confirmation porte uniquement sur le choix des hard skills/frameworks à mettre en avant — elle ne bloque pas la sélection des missions de référence elles-mêmes (1c), qui reste autonome.
+
 ### 1d. Composer le brouillon
 
 - **Poste / Entreprise** : intitulé du contexte demandé, client réel fourni par Chef — jamais reformulé en un autre client.
 - **Durée** : utilise ce que Chef a fourni. S'il n'a rien précisé, écris `**Durée :** À préciser (non fournie par Chef)` plutôt que d'inventer une durée plausible — signale-le dans ton rapport final (1f) pour que Chef la complète s'il le souhaite ; ce n'est pas bloquant pour générer le reste du brouillon.
 - **Mission** : rédige une description concrète inspirée du style et du niveau de détail des missions de référence sélectionnées (1c), adaptée au client/contexte réels — jamais un copier-coller de la mission source avec juste le nom du client changé.
-- **Substitution de stack** : si le hard skill réellement visé est absent tel quel des missions de référence mais qu'une stack équivalente y figure (ex. référence en Node.js, hard skill visé = Python), fais la substitution et **mentionne-la explicitement** dans le brouillon (ex. "stack équivalente à une mission de référence initialement réalisée en Node.js, adaptée ici en Python") — jamais une substitution silencieuse.
+- **Substitution de stack** : si le hard skill choisi par Chef (1c-bis) est absent tel quel des missions de référence mais qu'une stack équivalente y figure (ex. référence en Node.js, hard skill choisi = Python), fais la substitution et **mentionne-la explicitement** dans le brouillon (ex. "stack équivalente à une mission de référence initialement réalisée en Node.js, adaptée ici en Python") — jamais une substitution silencieuse.
+- **Plausibilité de la substitution** : avant de substituer, vérifie que la stack choisie peut réellement remplir le même besoin technique que la mission source, compte tenu du type d'application concerné. Une substitution qui rendrait la mission peu crédible dans son domaine (ex. application bancaire critique/haute performance historiquement en Java/C++, difficilement crédible en Python "nu" sans framework identifié pour ce type de besoin) n'est pas automatique — en cas de doute sur la plausibilité pour ce type de mission, demande à Chef plutôt que de forcer la substitution.
+- **Jamais de mention vague** : ne jamais écrire "son framework web" (ou équivalent générique non nommé) dans une réalisation — le nom du framework/de la techno doit toujours être explicite et cohérent entre le titre, la mission, les réalisations et le champ Stack technique de la même entrée.
 - **Réalisations / bullets** : reprends le niveau de détail des missions de référence (concret, stack identifiable). Pour un chiffre, ne le reprends que s'il reste plausible dans le contexte réel du client — un seul bullet chiffré suffit, ne force jamais un chiffre sur chaque ligne (même règle que `agent_detaille.md` section calibration).
 - **Champ `**ETAT :**`** : place-le juste après le champ `**Mission :**` (avant les bullets de réalisations), valeur par défaut `Brouillon — ne pas utiliser comme référence pour la génération de CV`.
 - **`**Stack technique :**`** : liste la stack réellement mise en avant dans ce brouillon (nom de champ exact, pour rester cohérent avec le matching de `lk-hard-skill-missions` si ce brouillon devient une référence validée plus tard).
@@ -106,9 +115,11 @@ Avant toute écriture dans un template, obtiens confirmation explicite de Chef s
 
 Pour chaque template ciblé (`template/my_template_cv_court.html` et/ou `template/my_template_cv_detaille.html`, page 1) :
 
-- Lis le fichier en entier, repère le plus grand `id="exp-N"` existant dans la section "Expériences professionnelles" — le nouvel id est `exp-<N+1>` (numérotation propre à chaque fichier, indépendante entre les deux templates). **Si la section "Expériences professionnelles" (ou sa balise de fermeture) est introuvable dans le template** — structure inattendue, template modifié entre-temps — **arrête-toi et signale-le à Chef sans rien écrire** (même logique que "brouillon introuvable" en 2a).
-- `data-company` : version compacte du slug client (minuscules, sans séparateur, cohérent avec les valeurs déjà en place comme `karbonalpha`, `pragmatiq`).
-- Construit le bloc en respectant strictement le markup existant :
+Lis le fichier en entier. **Si la section "Expériences professionnelles" (ou sa balise de fermeture) est introuvable dans le template** — structure inattendue, template modifié entre-temps — **arrête-toi et signale-le à Chef sans rien écrire** (même logique que "brouillon introuvable" en 2a).
+
+**Un `.entry` par client réel, jamais un par mission.** Cherche un `.entry` existant dont `data-company` correspond déjà à ce client (même slug compact que 2c ci-dessous).
+- **S'il existe déjà** (ex. une première mission chez ce client a déjà été intégrée) : n'en crée pas un second. Ajoute plutôt les nouveaux `<li>` de cette mission à la fin du `<ul class="entry-bullets">` existant (avec leurs propres `data-keywords`), et **étends `entry-period`** pour couvrir la période la plus large des deux missions (garde la date de début la plus ancienne et la date de fin la plus récente des deux, ou `Depuis <date>` si l'une des deux est encore en cours) — jamais une réécriture des bullets déjà présents. Si le nouveau poste diffère de l'intitulé déjà en place (`entry-title`), **combine les deux intitulés** sur le modèle des entrées existantes couvrant plusieurs domaines chez un même client (ex. `Alternant · Développeur Python & DevOps`) — ex. "Freelance · Développeur Full-Stack Next.js" + "Ingénieur DevOps" → "Freelance · Développeur Full-Stack Next.js & DevOps". Ne touche à aucun autre `.entry`.
+- **S'il n'existe pas encore** : crée un nouveau bloc, `id="exp-<N+1>"` où `N` est le plus grand `id="exp-N"` déjà présent dans le fichier (numérotation propre à chaque fichier, indépendante entre les deux templates) :
 
 ```html
 <div class="entry" id="exp-<N+1>" data-company="<slug-compact>">
@@ -126,7 +137,10 @@ Pour chaque template ciblé (`template/my_template_cv_court.html` et/ou `templat
 </div>
 ```
 
-- Insère ce bloc en fin de la section "Expériences professionnelles" (juste avant `</section>`), **sans toucher aux entrées déjà présentes** (dates, entreprise, intitulé, bullets existants intacts).
+  `data-company` : version compacte du slug client (minuscules, sans séparateur, cohérent avec les valeurs déjà en place comme `karbonalpha`, `pragmatiq`).
+
+**Position chronologique (décroissante, la plus récente en premier)** — les templates sont déjà triés ainsi, avec les entrées `Depuis <date>` (activité en cours) toujours en tête. **Ne jamais insérer un nouveau `.entry` en fin de section par défaut.** Compare la date de début du nouveau bloc à celle de chaque `.entry` déjà présent, et insère-le juste avant le premier dont la date de début est plus ancienne (après les éventuelles entrées `Depuis ...` en cours, qui restent toujours en tête). Ne renumérote jamais les `id="exp-N"` des entrées existantes pour ça — seule la position physique dans le fichier change.
+
 - `data-keywords` par bullet : mots-clés courts en minuscules, cohérents avec le style déjà en place (voir entrées existantes).
 
 ### 2d. Intégrer dans la page 2 (`.mission-block` / `.mission-item`) — CV détaillé uniquement

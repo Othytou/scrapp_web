@@ -56,6 +56,8 @@ En te basant sur `agent_court.md` + le `cv_context` (skills_pool, bullets_map) +
 
 **Avant de valider le patch, vérifie** (garde-fou ATS — un CV court doit rester dense, pas vide) : au moins 3 expériences restent visibles après `hide_entries`, chacune avec au moins un bullet. Si ce n'est pas le cas, tu as trop supprimé — reviens en arrière et privilégie `hide_bullets` (retirer des bullets précis) plutôt que `hide_entries` (supprimer une mission entière).
 
+**Deuxième vérification obligatoire, avant de valider le patch — pas après :** relis la liste des expériences visibles et, pour chacune, confirme explicitement dans ton raisonnement qu'elle comporte soit un bullet déjà chiffré, soit un `rewrite_bullets` qui en ajoute un (règle de l'étape 6 / `agent_court.md` étape 8, "Chiffrer au moins un bullet par expérience"). Une expérience visible sans aucun bullet chiffré ni justification explicite ("aucun ordre de grandeur crédible ne se dégage") est un patch incomplet — ne le valide pas tel quel.
+
 Log dans ta réponse le résumé façon `agent_court.md` (compétences injectées, missions/bullets masqués, non couvertes) pour que l'utilisateur voie ce qui a été fait.
 
 ### 4. Appliquer le patch

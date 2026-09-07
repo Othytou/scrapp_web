@@ -168,8 +168,6 @@ Règle d'inclusion — même logique que pour les compétences (étape 6) :
 - Ne jamais modifier les dates, l'entreprise, l'intitulé de poste d'une expérience — le
   masquage porte uniquement sur les bullets/expériences entières, jamais sur les métadonnées
 
-**Réordonner :** remonter les bullets `highlighted` restants en premier dans leur `<ul>`.
-
 **Chiffrer au moins un bullet par expérience (page 1 uniquement — pas tous les bullets) :**
 Pour chaque expérience qui reste visible, vérifie si un bullet conservé peut recevoir une
 donnée chiffrée réaliste (%, volume, durée gagnée, nombre de scripts/serveurs/utilisateurs...)
@@ -182,6 +180,12 @@ plausible dans ce type de mission. Réécrit via `rewrite_bullets`. Un seul bull
 suffit par expérience — ne pas chiffrer systématiquement chaque bullet, ça sonne faux. Si
 aucun ordre de grandeur crédible ne se dégage (ni du corpus, ni du contexte réel de la
 mission), laisse le bullet qualitatif plutôt que d'inventer un chiffre déconnecté.
+
+**Le bullet chiffré doit remonter en tête de son `<ul>` :** sur l'entrée `rewrite_bullets`
+correspondant au bullet chiffré, ajoute `"move_to_top": true` (voir le format JSON plus bas)
+— `html_patcher.py` le déplace alors en première position de la liste, avant tous les autres
+bullets de cette expérience (y compris les `highlighted`). N'ajoute `move_to_top` que sur le
+bullet réellement chiffré, jamais sur une réécriture purement terminologique.
 
 ### 9. Mise à jour des Soft Skills
 
@@ -241,7 +245,8 @@ ce qui ne s'applique pas, n'omets jamais une clé.
       "ul_id": "exp-0-bullets",
       "index": 2,
       "new_text": "Nouveau texte du bullet reformulé",
-      "new_keywords": "python,automation,api"
+      "new_keywords": "python,automation,api",
+      "move_to_top": false
     }
   ],
   "soft_skills": ["Autonome", "Force de proposition", "Leadership", "Capacité pédagogique"],
@@ -254,3 +259,6 @@ ce qui ne s'applique pas, n'omets jamais une clé.
   du pool `hidden`.
 - `highlight_bullets`/`hide_bullets` : format `{ul-id}:{index-du-li-dans-ul}`.
 - `hide_entries` : id de l'élément `.entry` (ex : `exp-3`).
+- `rewrite_bullets[].move_to_top` : optionnel (défaut `false`) — mets `true` uniquement sur
+  le bullet chiffré (étape 8, "Le bullet chiffré doit remonter en tête") pour qu'il passe en
+  première position de son `<ul>` ; ne jamais le mettre sur une réécriture non chiffrée.

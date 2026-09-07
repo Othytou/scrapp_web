@@ -24,14 +24,57 @@ PDF_DIR = os.getenv("PDF_DIR", "./pdf")
 CV_TYPE = os.getenv("CV_TYPE", "detaille")
 
 
-def generate_pdf(html_path: str, pdf_dir: str, filename: str) -> str:
-    from weasyprint import HTML
+# Dérivé de TEMPLATE_PATH (pas de __file__) : seul moyen fiable de retrouver template/ en local et en Docker.
+def _pagination_script_path() -> str:
+    return os.path.join(os.path.dirname(TEMPLATE_PATH), "pagination.js")
 
+
+async def generate_pdf(html_path: str, pdf_dir: str, filename: str, cv_type: str) -> str:
+    """
+    Génère le PDF à partir du HTML déjà patché.
+
+    CV_TYPE == "court" : Playwright/Chromium + pagination.js (WeasyPrint perd du
+    contenu sur ce layout Grid multi-page, voir spec-fix-cv-court-pdf-pagination.md).
+    Toute autre valeur : WeasyPrint inchangé.
+    """
     os.makedirs(pdf_dir, exist_ok=True)
     pdf_filename = filename.replace(".html", ".pdf")
     pdf_path = os.path.join(pdf_dir, pdf_filename)
-    HTML(filename=html_path).write_pdf(pdf_path)
+
+    if cv_type == "court":
+        await _generate_pdf_via_playwright(html_path, pdf_path)
+    else:
+        from weasyprint import HTML
+
+        HTML(filename=html_path).write_pdf(pdf_path)
+
     return pdf_path
+
+
+async def _generate_pdf_via_playwright(html_path: str, pdf_path: str) -> None:
+    from playwright.async_api import async_playwright
+
+    with open(_pagination_script_path(), "r", encoding="utf-8") as f:
+        pagination_script = f.read()
+
+    async with async_playwright() as p:
+        # --no-sandbox : requis, le container tourne en root et le sandbox Chromium
+        # par defaut echoue dans ce contexte.
+        browser = await p.chromium.launch(args=["--no-sandbox"])
+        try:
+            page = await browser.new_page()
+            await page.goto(f"file://{os.path.abspath(html_path)}")
+            # Le contrat `.page{height:297mm;overflow:hidden}` que pagination.js
+            # mesure n'existe qu'en media print.
+            await page.emulate_media(media="print")
+            # Polices Google Fonts chargées de façon asynchrone : attendre leur
+            # chargement avant de mesurer, sinon les hauteurs mesurées sont fausses.
+            await page.evaluate("document.fonts.ready")
+            await page.add_script_tag(content=pagination_script)
+            await page.evaluate("window.paginateCV()")
+            await page.pdf(path=pdf_path, print_background=True, prefer_css_page_size=True)
+        finally:
+            await browser.close()
 
 
 async def main():
@@ -62,7 +105,12 @@ async def main():
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         write_output(patched_soup, output_path)
 
-        pdf_path = generate_pdf(output_path, PDF_DIR, filename)
+        try:
+            pdf_path = await generate_pdf(output_path, PDF_DIR, filename, CV_TYPE)
+        except Exception as exc:
+            logger.error(f"Echec de generation du PDF ({output_path}) : {exc}")
+            print(json.dumps({"error": f"Echec de generation du PDF : {exc}"}))
+            sys.exit(1)
 
         application.status = "generated"
         if CV_TYPE == "court":

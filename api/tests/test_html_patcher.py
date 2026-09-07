@@ -45,6 +45,53 @@ def test_apply_patch_handles_empty_inject_skills():
     assert result.find("span") is None
 
 
+def test_apply_patch_moves_rewritten_bullet_to_top():
+    soup = BeautifulSoup(
+        '<ul id="exp-0-bullets">'
+        '<li data-keywords="a">Bullet A</li>'
+        '<li data-keywords="b">Bullet B</li>'
+        '<li data-keywords="c">Bullet C</li>'
+        "</ul>",
+        "html.parser",
+    )
+    patch = {
+        "rewrite_bullets": [
+            {
+                "ul_id": "exp-0-bullets",
+                "index": 2,
+                "new_text": "Bullet C chiffré à 42%",
+                "move_to_top": True,
+            }
+        ]
+    }
+
+    result = apply_patch(soup, patch, {"skills_pool": {}})
+
+    items = result.find(id="exp-0-bullets").find_all("li")
+    assert [li.text for li in items] == ["Bullet C chiffré à 42%", "Bullet A", "Bullet B"]
+    assert "data-move-top" not in items[0].attrs
+
+
+def test_apply_patch_rewrite_without_move_to_top_keeps_order():
+    soup = BeautifulSoup(
+        '<ul id="exp-0-bullets">'
+        '<li data-keywords="a">Bullet A</li>'
+        '<li data-keywords="b">Bullet B</li>'
+        "</ul>",
+        "html.parser",
+    )
+    patch = {
+        "rewrite_bullets": [
+            {"ul_id": "exp-0-bullets", "index": 1, "new_text": "Bullet B reformulé"}
+        ]
+    }
+
+    result = apply_patch(soup, patch, {"skills_pool": {}})
+
+    items = result.find(id="exp-0-bullets").find_all("li")
+    assert [li.text for li in items] == ["Bullet A", "Bullet B reformulé"]
+
+
 def test_extract_cv_context_parses_skills_pool():
     html = """
     <script>

@@ -58,7 +58,7 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
         "highlight_skills": ["python", "django"],
         "hide_skills": ["flutter", "flutterflow"],
         "inject_skills": {"tags-langages": ["fastapi"]},
-        "rewrite_bullets": [{"ul_id": "...", "index": 0, "new_text": "...", "new_keywords": "..."}],
+        "rewrite_bullets": [{"ul_id": "...", "index": 0, "new_text": "...", "new_keywords": "...", "move_to_top": False}],
         "highlight_bullets": ["exp-olcr-bullets:0"],
         "hide_bullets": ["exp-1-bullets:2"],
         "hide_entries": ["exp-4"],
@@ -111,6 +111,9 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
             li.string = new_text
             if new_keywords:
                 li["data-keywords"] = new_keywords
+            if rewrite.get("move_to_top"):
+                # Déplacement réel en étape 12 seulement — les étapes suivantes réfèrent encore aux index d'origine.
+                li["data-move-top"] = "1"
             logger.info(f"Bullet réécrit — {ul_id}:{index}")
 
     # 4. Highlight skills
@@ -162,11 +165,7 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
             new_tag = soup.new_tag("span", attrs={"class": "tag injected", "data-skill": skill_key})
             new_tag.string = label
             if container.find("span", class_="tag"):
-                # Sépare les tags par un espace réel : contrairement aux tags statiques du
-                # template (séparés par l'indentation HTML, donc déjà par un noeud texte),
-                # .append() ici colle les spans sans rien entre eux — un parseur ATS qui
-                # concatène le texte par ordre de flux plutôt que par coordonnées produirait
-                # "PythonDjangoPHP" sans ce séparateur.
+                # Espace réel entre tags injectés, sinon un ATS lisant le texte à plat lit "PythonDjangoPHP".
                 container.append(" ")
             container.append(new_tag)
             injected.append(skill_key)
@@ -205,9 +204,7 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
         else:
             ul.clear()
 
-            # Déduplique en conservant l'ordre — le patch est l'unique source de vérité,
-            # rien n'est réinjecté depuis l'ancien contenu (évite un doublon si le patch
-            # répète déjà un skill "obligatoire" présent dans le template d'origine).
+            # Déduplique en conservant l'ordre — le patch remplace entièrement l'ancien contenu.
             seen = []
             for skill in soft_skills[:4]:
                 if skill not in seen:
@@ -260,9 +257,7 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
     if hide_entries:
         logger.info(f"Missions masquées (hors sujet pour l'offre) : {hide_entries}")
 
-    # 11. Auto-masquage des groupes de compétences restés vides — utile pour le CV
-    # court, où rien n'est affiché par défaut et inject_skills construit tout le
-    # contenu visible ; no-op pour le CV détaillé où displayed est toujours peuplé.
+    # 11. Auto-masquage des groupes de compétences restés vides (no-op pour le CV détaillé)
     removed_groups = 0
     for tags_container in soup.find_all("div", class_="skill-tags"):
         if not tags_container.find("span", class_="tag"):
@@ -272,6 +267,19 @@ def apply_patch(soup: BeautifulSoup, patch: dict, cv_context: dict) -> Beautiful
 
     if removed_groups:
         logger.info(f"Groupes de compétences vides masqués : {removed_groups}")
+
+    # 12. Remonte en tête le bullet chiffré marqué à l'étape 3 (toujours en dernier, cf. étape 3)
+    moved_to_top = 0
+    for li in soup.find_all("li", attrs={"data-move-top": True}):
+        del li["data-move-top"]
+        parent = li.parent
+        if parent:
+            li.extract()
+            parent.insert(0, li)
+            moved_to_top += 1
+
+    if moved_to_top:
+        logger.info(f"Bullets chiffrés remontés en tête de liste : {moved_to_top}")
 
     return soup
 

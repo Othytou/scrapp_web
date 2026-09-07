@@ -176,6 +176,10 @@
 
 	.section {
 		margin-top: 20px;
+	}
+
+	/* Bloc insécable (ex. Formation et Certification) — jamais coupé entre 2 pages. */
+	.section-nosplit {
 		break-inside: avoid;
 		page-break-inside: avoid;
 	}
@@ -261,6 +265,28 @@
 		font-size: 1rem;
 		line-height: 1.4;
 		flex-shrink: 0;
+	}
+
+	.tag.highlighted {
+		background: #1a3a2a;
+		color: #e8f0eb;
+		font-weight: 500;
+	}
+
+	.tag.injected {
+		background: #2d5a3d;
+		color: #c8e6d0;
+		border: 1px dashed #5a9a6a;
+	}
+
+	.entry-bullets li.highlighted {
+		color: var(--ink);
+		font-weight: 500;
+	}
+
+	.entry-bullets li.highlighted::before {
+		color: #2d7a4a;
+		font-weight: 700;
 	}
 
 	/* Education */
@@ -400,6 +426,10 @@
 			box-shadow: none;
 			width: 210mm;
 			min-height: 297mm;
+		}
+
+		.page:not(:last-child) {
+			break-after: page;
 		}
 	}
 
