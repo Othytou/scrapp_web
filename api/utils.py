@@ -38,10 +38,21 @@ def slugify(value: str, max_length: int = 40) -> str:
 CANDIDATE_SLUG = os.getenv("CANDIDATE_SLUG", "candidat")
 
 
-def build_output_filename(company: str) -> str:
+PREFIX_BY_TYPE_AND_LANG = {
+    ("court", "fr"): "cv",
+    ("court", "en"): "resume",
+    ("detaille", "fr"): "dc",
+    ("detaille", "en"): "sp",
+}
+
+
+def build_output_filename(company: str, cv_type: str = "detaille", language: str = "fr") -> str:
     """
-    Construit le nom du fichier HTML de sortie.
-    ex: cv_la-poste_<CANDIDATE_SLUG>.html
+    Construit le nom du fichier HTML de sortie — préfixe différencie type ET langue :
+    "cv_"/"resume_" pour le court (FR/EN), "dc_"/"sp_" (dossier de compétences /
+    skill portfolio) pour le détaillé (FR/EN).
+    ex: cv_la-poste_<CANDIDATE_SLUG>.html / resume_la-poste_<CANDIDATE_SLUG>.html
     """
+    prefix = PREFIX_BY_TYPE_AND_LANG[(cv_type if cv_type == "court" else "detaille", language)]
     company_slug = slugify(company)
-    return f"cv_{company_slug}_{CANDIDATE_SLUG}.html"
+    return f"{prefix}_{company_slug}_{CANDIDATE_SLUG}.html"

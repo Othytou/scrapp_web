@@ -22,6 +22,8 @@ OUTPUT_DIR = os.getenv("OUTPUT_DIR", "./output")
 PDF_DIR = os.getenv("PDF_DIR", "./pdf")
 # "detaille" (defaut) ou "court" — decide quelles colonnes Application sont mises a jour.
 CV_TYPE = os.getenv("CV_TYPE", "detaille")
+# "fr" (defaut) ou "en" — decide uniquement le prefixe du fichier de sortie (cv_/dc_ vs resume_/sp_).
+CV_LANG = os.getenv("CV_LANG", "fr")
 
 
 # Dérivé de TEMPLATE_PATH (pas de __file__) : seul moyen fiable de retrouver template/ en local et en Docker.
@@ -96,11 +98,9 @@ async def main():
         cv_context = extract_cv_context(soup)
         patched_soup = apply_patch(soup, patch, cv_context)
 
-        filename = build_output_filename(application.company)
-        if CV_TYPE == "court":
-            # Suffixe plutôt que sous-dossier séparé : garde output/ et pdf/ à plat pour
-            # que le <link> relatif vers ../template/*.css reste valide dans tous les cas.
-            filename = filename.replace(".html", "_court.html")
+        # Préfixe ("cv_"/"dc_"/"resume_"/"sp_") différencie type ET langue sans sous-dossier séparé —
+        # garde output/ et pdf/ à plat pour que le <link> relatif vers ../template/*.css reste valide.
+        filename = build_output_filename(application.company, CV_TYPE, CV_LANG)
         output_path = os.path.join(OUTPUT_DIR, filename)
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         write_output(patched_soup, output_path)

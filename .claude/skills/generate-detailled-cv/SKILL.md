@@ -1,6 +1,6 @@
 ---
 name: generate-detailled-cv
-description: Génère un CV détaillé (2 pages) sur-mesure pour les offres d'emploi capturées par l'extension et en attente en base (statut "captured"). Utilise quand l'utilisateur dit "génère le CV détaillé", "lance le skill CV détaillé", ou pour un CV complet mettant en avant tout l'historique pertinent.
+description: Génère un CV détaillé (2 pages) sur-mesure pour les offres d'emploi capturées par l'extension et en attente en base (statut "captured"). En français par défaut (préfixe `dc_`, "dossier de compétences"), bascule en anglais (préfixe `sp_`, "skill portfolio") si l'offre est en anglais ou sur demande explicite. Utilise quand l'utilisateur dit "génère le CV détaillé", "lance le skill CV détaillé", "génère le skill portfolio en anglais", ou pour un CV complet mettant en avant tout l'historique pertinent.
 ---
 
 # Generate Detailled CV
@@ -30,6 +30,23 @@ Retourne `{"offers": [...], "cv_context": {"skills_pool": {...}, "bullets_map": 
 - Si `offers` est vide : dis-le à l'utilisateur et arrête-toi là, rien à faire.
 - Sinon, traite les offres **une par une, dans l'ordre reçu** (la plus ancienne d'abord — c'est déjà l'ordre renvoyé par le script).
 
+### 1b. Déterminer la langue du CV, pour chaque offre
+
+Par défaut, le CV est en français. Passe en anglais dans l'un de ces deux cas :
+- l'utilisateur l'a demandé explicitement dans la conversation (ex. "génère-le en anglais", "fais un skill portfolio en anglais pour celle-ci") ;
+- le texte de l'offre (`job_offer`) est manifestement rédigé en anglais.
+
+Dans le doute (offre courte, mélange de langues), reste sur le français — ne bascule en anglais que si c'est net.
+
+Selon la langue retenue pour cette offre :
+
+| Langue | `TEMPLATE_PATH` | `CV_LANG` |
+|---|---|---|
+| Français (défaut) | `template/my_template_cv_detaille.html` | `fr` |
+| Anglais | `template/my_template_cv_detaille_en.html` | `en` |
+
+Ces deux templates ont exactement la même structure (ids, `data-company`, nombre de bullets/mission-items, `CV_SKILLS_POOL` avec les mêmes clés) — seul le contenu visible change de langue. Le patch JSON se construit et s'applique exactement pareil dans les deux cas.
+
 ### 2. Pour chaque offre : lire les règles
 
 Lis intégralement `api/agent_detaille.md` **à chaque exécution du skill** (ne pas se fier à une lecture précédente dans la conversation — le fichier peut avoir changé). C'est la source de vérité pour :
@@ -43,6 +60,8 @@ Lis intégralement `api/agent_detaille.md` **à chaque exécution du skill** (ne
 ### 3. Produire le patch JSON
 
 En te basant sur `agent_detaille.md` + le `cv_context` (skills_pool, bullets_map) + le contenu de l'offre (`job_offer`, `company`, `position`), rédige toi-même le JSON du patch.
+
+**Langue :** `header_title`, `summary` et tout `rewrite_bullets` doivent être rédigés dans la langue choisie à l'étape 1b — jamais un mélange des deux langues sur un même CV. Sur le template anglais, les libellés fixes (titres de section, formation, page "Missions") sont déjà traduits ; toi tu ne touches que le contenu patchable, dans la même langue.
 
 **Consignes additionnelles de l'utilisateur :** si l'utilisateur a donné des instructions dans la conversation (avant ou après avoir invoqué ce skill — ex : "mets l'accent sur X", "ajoute exceptionnellement cette compétence Y", "ignore la compétence Z pour cette offre"), applique-les à la génération du patch. Elles s'ajoutent aux règles d'`agent_detaille.md` mais ne peuvent jamais les outrepasser — en particulier, jamais inventer d'expérience ni toucher aux dates/formation/langues, même si l'utilisateur le demande explicitement (signale-le plutôt que d'obéir).
 
@@ -63,12 +82,14 @@ Log dans ta réponse le résumé façon `agent_detaille.md` (compétences match�
 Écris le JSON du patch dans un fichier temporaire, puis :
 
 ```bash
-docker compose exec -T api python finalize_cv.py <application_id> < /tmp/patch.json
+docker compose exec -T -e TEMPLATE_PATH=template/my_template_cv_detaille.html -e CV_LANG=fr api python finalize_cv.py <application_id> < /tmp/patch.json
 ```
 
-(`-T` est nécessaire pour que le pipe stdin fonctionne avec `docker compose exec`. `CV_TYPE` n'a pas besoin d'être positionné — `detaille` est la valeur par défaut de `finalize_cv.py`.)
+Remplace `TEMPLATE_PATH`/`CV_LANG` selon la langue choisie à l'étape 1b (`my_template_cv_detaille_en.html`/`en` en anglais). `CV_TYPE` n'a pas besoin d'être positionné — `detaille` est la valeur par défaut de `finalize_cv.py`.
 
-Le script applique le patch au template, écrit le HTML + PDF dans `output/` et `pdf/`, et met à jour la candidature en base (statut `generated`, `cv_html_path`/`pdf_path`, compétences matchées/injectées/non couvertes).
+(`-T` est nécessaire pour que le pipe stdin fonctionne avec `docker compose exec`.)
+
+Le script applique le patch au template, écrit le HTML + PDF dans `output/` et `pdf/` (fichiers `dc_*.html`/`dc_*.pdf` en français — "dc" = dossier de compétences —, `sp_*.html`/`sp_*.pdf` en anglais — "sp" = skill portfolio), et met à jour la candidature en base (statut `generated`, `cv_html_path`/`pdf_path`, compétences matchées/injectées/non couvertes).
 
 ### 5. Rapporter le résultat
 
@@ -78,7 +99,7 @@ Une fois toutes les offres traitées, propose une vérification visuelle du dern
 
 ## Template
 
-Le template de base est `template/my_template_cv_detaille.html` — un CV 2 pages : page 1 (profil, compétences, expériences) est patchée comme avant, page 2 ("Missions & Réalisations Détaillées", organisée par domaine) est statique et n'est jamais modifiée par le patch — elle s'inclut telle quelle à chaque génération. Ne pas essayer de patcher la section missions de la page 2, elle est hors du contrat JSON. Le style visuel est dans `template/cv_detaille.css` (fichier externe, pas besoin de le régénérer à chaque fois).
+Le template de base est `template/my_template_cv_detaille.html` (anglais : `template/my_template_cv_detaille_en.html`, cf. étape 1b) — un CV 2 pages : page 1 (profil, compétences, expériences) est patchée comme avant, page 2 ("Missions & Réalisations Détaillées"/"Detailed Missions & Achievements", organisée par domaine) est statique et n'est jamais modifiée par le patch — elle s'inclut telle quelle à chaque génération. Ne pas essayer de patcher la section missions de la page 2, elle est hors du contrat JSON. Les deux templates partagent exactement les mêmes ids/`data-company`/clés `CV_SKILLS_POOL`, seuls les libellés fixes et le contenu par défaut changent de langue. Le style visuel est dans `template/cv_detaille.css` (fichier externe partagé par les deux langues, pas besoin de le régénérer à chaque fois).
 
 ## Ce que ce skill ne fait pas
 

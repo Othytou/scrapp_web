@@ -42,27 +42,33 @@
 		return chain.reverse();
 	}
 
+	// Descend/recrée la hiérarchie `ancestorsAboveTarget` (sans `.col-left`) sous `pageEl`.
+	function findOrCreateContainer(pageEl, ancestorsAboveTarget) {
+		let parent = pageEl;
+		for (const ancestor of ancestorsAboveTarget) {
+			let child = Array.from(parent.children).find((c) => c.className === ancestor.className);
+			if (!child) {
+				child = document.createElement('div');
+				child.className = ancestor.className;
+				if (ancestor.classList.contains('body')) {
+					child.style.gridTemplateColumns = '1fr'; // pas de .col-left en continuation
+				}
+				parent.appendChild(child);
+			}
+			parent = child;
+		}
+		return parent;
+	}
+
 	// Nouvelle `.page` en fin de document (jamais juste après la source, pour ne
-	// pas inverser l'ordre si une page déborde plusieurs fois de suite) — clone
-	// `ancestorsAboveTarget` (sans `.col-left`) puis y déplace `nodes`.
+	// pas inverser l'ordre si une page déborde plusieurs fois de suite).
 	function createContinuationPage(ancestorsAboveTarget, nodes) {
 		const newPage = document.createElement('div');
 		newPage.className = 'page';
-
-		let parent = newPage;
-		for (const ancestor of ancestorsAboveTarget) {
-			const clone = document.createElement('div');
-			clone.className = ancestor.className;
-			if (ancestor.classList.contains('body')) {
-				clone.style.gridTemplateColumns = '1fr'; // pas de .col-left en continuation
-			}
-			parent.appendChild(clone);
-			parent = clone;
-		}
-
-		nodes.forEach((node) => parent.appendChild(node));
-
 		document.body.appendChild(newPage);
+
+		const target = findOrCreateContainer(newPage, ancestorsAboveTarget);
+		nodes.forEach((node) => target.appendChild(node));
 	}
 
 	// Un seul débordement traité par appel (le caller ré-itère) — cherché
@@ -82,8 +88,22 @@
 
 					const availableHeight = limit - pageContentTop(page);
 					if (rect.height <= availableHeight + 0.5) {
-						// Tient sur une page pleine : déplacer le bloc intact.
 						const chain = buildAncestorChain(section);
+
+						// Essaie d'abord la dernière page déjà créée (ex. celle où
+						// l'expérience précédente vient de déborder) plutôt que d'ouvrir
+						// systématiquement une page neuve — évite une page quasi vide.
+						const allPages = Array.from(document.querySelectorAll('.page'));
+						const lastPage = allPages[allPages.length - 1];
+						if (lastPage && lastPage !== page) {
+							const target = findOrCreateContainer(lastPage, chain);
+							target.appendChild(section);
+							if (elementBottom(section) <= pageContentBottom(lastPage) + 0.5) {
+								return true;
+							}
+							// Ne tient pas non plus sur la dernière page existante : repart sur une page neuve.
+						}
+
 						createContinuationPage(chain, [section]);
 						return true;
 					}
