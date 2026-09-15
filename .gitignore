@@ -44,3 +44,5 @@ _bmad
 
 # MCP servers (local tooling, contains session/cookie data)
 tools/linkedin-mcp/data/
+
+document_vide.txt

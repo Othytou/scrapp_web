@@ -69,6 +69,13 @@ le conteneur de sa catégorie :
   poste précis, pas systématiquement
 - **Ne jamais** injecter une compétence sans rapport avec l'offre pour "remplir" le CV —
   le but est un CV court et ciblé, pas un inventaire
+- **Cohérence bullets/compétences :** si un bullet reste visible (non retiré par
+  `hide_bullets`) et mentionne clairement une techno ou pratique significative (Docker,
+  Kubernetes, Terraform, CI/CD, tests unitaires/intégration, SonarQube, un outil précis...),
+  injecte la compétence correspondante quand elle existe dans le pool. Un bullet qui parle de
+  Docker/Kubernetes alors que ces compétences sont absentes des tags est une incohérence
+  visible pour un recruteur ou un ATS — si le bullet n'est pas pertinent pour l'offre, il vaut
+  mieux le masquer via `hide_bullets` que de le garder sans injecter la compétence associée
 - Une catégorie qui ne reçoit aucune injection disparaît automatiquement du CV (géré par
   `html_patcher.py`, rien à faire de plus)
 - N'injecter que des clés présentes dans `CV_SKILLS_POOL.hidden` (ici, "hidden" désigne

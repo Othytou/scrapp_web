@@ -34,9 +34,8 @@
 	function buildAncestorChain(target) {
 		const chain = [];
 		let current = target.parentElement;
-		while (current) {
+		while (current && !current.classList.contains('page')) {
 			chain.push(current);
-			if (current.classList.contains('page')) break;
 			current = current.parentElement;
 		}
 		return chain.reverse();

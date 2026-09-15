@@ -75,6 +75,8 @@ En te basant sur `agent_detaille.md` + le `cv_context` (skills_pool, bullets_map
 
 **Deuxième vérification obligatoire, avant de valider le patch — pas après :** relis la liste des expériences visibles et, pour chacune, confirme explicitement dans ton raisonnement qu'elle comporte soit un bullet déjà chiffré, soit un `rewrite_bullets` qui en ajoute un (règle de l'étape 8, "Chiffrer au moins un bullet par expérience"). Une expérience visible sans aucun bullet chiffré ni justification explicite ("aucun ordre de grandeur crédible ne se dégage") est un patch incomplet — ne le valide pas tel quel.
 
+**Troisième vérification obligatoire, avant de valider le patch :** relis tous les bullets restés visibles (non masqués par `hide_bullets`) et repère les technos/pratiques significatives qu'ils citent (Docker, Kubernetes, CI/CD, tests, un outil précis...). Pour chacune, vérifie qu'elle n'est pas masquée via `hide_skills` (règle de l'étape 6, "Cohérence bullets/compétences"). Un bullet visible qui mentionne une techno absente des tags affichés est un patch incohérent — corrige en retirant le `hide_skills` correspondant, ou masque le bullet s'il n'est finalement pas pertinent pour l'offre.
+
 Log dans ta réponse le résumé façon `agent_detaille.md` (compétences matchées/masquées/injectées, missions/bullets masqués, non couvertes) pour que l'utilisateur voie ce qui a été fait.
 
 ### 4. Appliquer le patch

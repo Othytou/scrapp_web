@@ -114,6 +114,12 @@ adjacent**, avec l'offre.
   si elle semble décalée par rapport au reste du profil
 - Si le masquage vide entièrement une catégorie de compétences, elle disparaît
   automatiquement du CV (géré par `html_patcher.py`, rien à faire de plus)
+- **Cohérence bullets/compétences :** ne masque pas une compétence si un bullet resté visible
+  (non retiré par `hide_bullets`) la mentionne clairement (Docker, Kubernetes, CI/CD, tests,
+  un outil précis...) — un bullet qui parle de Docker/Kubernetes alors que ces compétences
+  sont masquées est une incohérence visible pour un recruteur ou un ATS. Si le bullet n'est
+  pas pertinent pour l'offre, masque-le plutôt via `hide_bullets` que de masquer seulement la
+  compétence associée
 
 **Ne pas confondre avec l'injection (étape 7)** — `hide_skills` retire des compétences déjà
 visibles, `inject_skills` en ajoute de nouvelles depuis le pool `hidden`. Ne jamais mettre
