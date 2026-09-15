@@ -7,9 +7,19 @@ const config = {
 		'Indeed': {
 			header: '.jobsearch-InfoHeaderContainer',
 			description: '.jobsearch-JobComponent-description'
-		}, 'LinkedIn': '', // À compléter
-		'Welcome to the Jungle': '', // À compléter
-		'HelloWork': '', // À compléter
+		}, 'LinkedIn': {
+			header: null, // aucun sélecteur DOM stable — fallback via document.title
+			description: '[data-sdui-component="com.linkedin.sdui.generated.jobseeker.dsl.impl.aboutTheJob"]'
+		},
+		'Welcome to the Jungle': {
+			header: '[data-testid="job-metadata-block"]',
+			description: '[data-testid="job-section-description"]',
+			tags: '[data-testid="job-metadata-block"] div:has(> [data-testid="skills-show-more"])'
+		},
+		'HelloWork': {
+			header: 'h1#main-content',
+			description: 'section:has(use[href="/svg/icons/offre.svg#offre"])'
+		},
 		'Free-Work': {
 			header: 'header.bg-primary',
 			description: '.html-renderer.prose-content',
@@ -97,6 +107,7 @@ function addCopyButton() {
 		});
 
 		btn.addEventListener('click', () => {
+			const siteName = detectCurrentSite();
 			const header = selectors.header ? document.querySelector(selectors.header) : null;
 
 			// Free-work
@@ -147,6 +158,35 @@ function addCopyButton() {
 				if (!company) {
 					const fwCompany = header.querySelector('p.font-semibold.text-sm');
 					if (fwCompany) company = fwCompany.innerText.trim();
+				}
+				// Welcome to the Jungle
+				if (!position) {
+					const wttjTitle = header.querySelector('h2');
+					if (wttjTitle) position = wttjTitle.innerText.trim();
+				}
+				if (!company) {
+					const wttjCompany = header.querySelector('a[href*="/companies/"] .wui-text');
+					if (wttjCompany) company = wttjCompany.innerText.trim();
+				}
+				// HelloWork
+				if (!position) {
+					const hwTitle = header.querySelector('[data-cy="jobTitle"]');
+					if (hwTitle) position = hwTitle.innerText.trim();
+				}
+				if (!company) {
+					const hwCompany = header.querySelector('a[href*="/entreprises/"]');
+					if (hwCompany) company = hwCompany.innerText.trim();
+				}
+			}
+
+			// LinkedIn — pas de sélecteur DOM stable pour titre/entreprise, parsing du <title>
+			// Format : "{Titre} | {Entreprise} | ... | LinkedIn" (des badges type "B Corp™" peuvent
+			// s'insérer entre l'entreprise et "LinkedIn" — l'entreprise reste toujours le 2e segment)
+			if (siteName === 'LinkedIn' && (!position || !company)) {
+				const titleParts = document.title.split('|').map(s => s.trim());
+				if (titleParts.length >= 3 && titleParts[titleParts.length - 1] === 'LinkedIn') {
+					if (!position) position = titleParts[0];
+					if (!company) company = titleParts[1];
 				}
 			}
 

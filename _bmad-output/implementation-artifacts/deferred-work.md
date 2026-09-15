@@ -52,3 +52,12 @@
 - source_spec: `_bmad-output/implementation-artifacts/2-5-generation-experiences-cv-generate-mission-cv.md`
   summary: `hard-skills-missions.md` (table produite par `lk-hard-skill-missions`, Story 2.4) ne se resynchronise jamais automatiquement quand une entrée `missions-generees/<client-slug>.md` passe à `Validé` et devient une référence légitime au même titre que `missions-realisees/`.
   evidence: `lk-hard-skill-missions` ne scanne aujourd'hui que `missions-realisees/missions-*.md` — une mission validée via `generate-mission-cv` peut mettre en avant un hard skill sans que la table de couverture (2.4) ne s'en trouve jamais mise à jour, laissant la table dériver silencieusement de la réalité du corpus. Hors scope de 2.5 (toucherait le skill `lk-hard-skill-missions` d'une autre story) — à traiter comme extension éventuelle de 2.4 plutôt que par 2.5.
+
+## Deferred from: code review of spec-1-2-sites-capture-restants (2026-09-15)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-sites-capture-restants.md`
+  summary: `/webhook` (`api/main.py`) accepte `company`/`position`/`job_offer` vides sans validation, et `content.js`/`background.js` affichent un succès (`✓ Copié !`, notification, webhook envoyé) même quand l'extraction a échoué et laissé ces champs vides.
+  evidence: Surfacé par le reviewer verification-gap — pré-existant sur tous les sites (Indeed, Free-Work) et pas causé par cette story, mais le nouveau fallback `document.title` pour LinkedIn rend ce risque plus tangible (un format de titre inattendu suffit à vider silencieusement `company`/`position`). Aucun test ne couvre `/webhook` (`api/tests` ne le référence jamais). Corrigerait : ajouter une validation minimale côté `/webhook` (rejet ou flag si champs vides) et/ou un retour visuel différent côté extension quand l'extraction échoue.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-sites-capture-restants.md`
+  summary: Aucun framework de test automatisé n'existe pour `extension/` (aucun fichier de test, pas de hot-reload) — toute régression sur les 5 sites de capture ne peut être détectée que manuellement.
+  evidence: Pré-existant, pas spécifique à cette story ni aux 3 nouveaux sites — s'applique déjà à Indeed/Free-Work. Deviendrait pertinent si le nombre de sites/sélecteurs continue de croître (risque de régression silencieuse à chaque nouvel ajout).
