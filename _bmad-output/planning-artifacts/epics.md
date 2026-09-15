@@ -132,6 +132,42 @@ Afin de pouvoir capturer une offre depuis n'importe lequel de ces sites sans ét
 
 **Et** les 3 sites sont couverts par cette story unique (effort réduit par site — 2-3 sélecteurs CSS chacun) ; chaque site reste vérifiable indépendamment au fur et à mesure de l'implémentation.
 
+### Story 1.3: Tests automatisés end-to-end pour l'extension de capture
+
+En tant que Chef,
+Je veux une suite de tests qui vérifie automatiquement la logique d'extraction (titre/entreprise/description/tags) pour chacun des sites de capture supportés,
+Afin de détecter une régression de sélecteur sans devoir recharger manuellement l'extension et retester chaque site à la main après chaque modification.
+
+**Critères d'acceptation :**
+
+**Étant donné** des fixtures HTML représentatives (une page d'offre sauvegardée) pour chacun des 5 sites supportés (Indeed, Free-Work, LinkedIn, Welcome to the Jungle, HelloWork)
+**Quand** la suite de tests est exécutée
+**Alors** elle vérifie, pour chaque site, que `config.siteSelectors` produit un titre, une entreprise et une description non vides à partir de la fixture, sans dépendre d'un accès réseau à un vrai site en ligne (fragile et non répétable)
+
+**Étant donné** un sélecteur de site qui cesse de matcher (ex. changement de DOM du site)
+**Quand** la suite de tests tourne
+**Alors** le test correspondant échoue explicitement, plutôt que de laisser la régression être découverte uniquement en production via une candidature `captured` avec des champs vides
+
+**Note (2026-09-15) :** Besoin identifié pendant la revue de code de la Story 1.2 — aucun framework de test n'existe aujourd'hui pour `extension/` (`content.js`/`background.js`), contrairement à `api/` (pytest). Voir `deferred-work.md`. Périmètre exact (outil : jsdom, Playwright, autre ; origine des fixtures HTML ; exécution locale uniquement ou CI) volontairement non tranché ici, à décider en préparation détaillée de la story.
+
+### Story 1.4: Validation des offres capturées avec champs manquants
+
+En tant que Chef,
+Je veux être informé quand une offre capturée a un titre ou une entreprise vide,
+Afin de ne pas laisser s'accumuler silencieusement des candidatures `captured` avec des données incomplètes, en particulier pour les sites où l'extraction dépend d'un fallback fragile (ex. `document.title` pour LinkedIn).
+
+**Critères d'acceptation :**
+
+**Étant donné** un payload envoyé à `/webhook` avec `company` ou `position` vide
+**Quand** l'API le reçoit
+**Alors** un signal explicite existe (rejet, flag `incomplete`, ou autre mécanisme à définir en préparation détaillée) — aujourd'hui le payload est accepté et enregistré tel quel sans aucune validation ni signal
+
+**Étant donné** l'extension a extrait un titre ou une entreprise vide côté client
+**Quand** la capture est déclenchée (bouton flottant ou raccourci)
+**Alors** le retour visuel (notification, couleur du bouton) diffère d'une capture complète, pour alerter Chef immédiatement plutôt qu'après coup en consultant la base
+
+**Note (2026-09-15) :** Besoin identifié pendant la revue de code de la Story 1.2 — pré-existant sur tous les sites (Indeed, Free-Work compris), mais rendu plus tangible par le fallback `document.title` de LinkedIn (un format de titre inattendu suffit à vider silencieusement `company`/`position`). Voir `deferred-work.md`. Décision de comportement exact (rejet vs flag) volontairement non tranchée ici.
+
 ## Epic 2: Intelligence LinkedIn
 
 Chef analyse le profil d'experts reconnus pour en tirer des conseils applicables (LinkedIn, Malt, CV), et peut transformer un post LinkedIn repéré dans son feed en offre capturée au même titre qu'un job-board classique.
