@@ -52,6 +52,11 @@ function copyJobContent() {
 			header: 'header.bg-primary',
 			description: '.html-renderer.prose-content',  // multiple blocs à concaténer
 			tags: 'div[slot="subtitle"] a.tag'
+		},
+		'StackJobs': {
+			header: 'div.rounded-3xl.min-h-screen',      // englobe h1 (titre) + logo entreprise
+			description: 'div.space-y-6 section:nth-of-type(2)', // 2e <section> = "Description de l'offre" (la 1re est "Description de l'entreprise", même classe, non distinguable par classe seule)
+			tags: 'div.lg\\:justify-end [title]'          // chips "Stack requis" (Python/Git/Linux...)
 		}
 
 	};
@@ -62,7 +67,8 @@ function copyJobContent() {
 		{ name: 'LinkedIn', url: 'linkedin.com' },
 		{ name: 'Welcome to the Jungle', url: 'welcometothejungle.com' },
 		{ name: 'HelloWork', url: 'hellowork.com' },
-		{ name: 'Free-Work', url: 'free-work.com' }
+		{ name: 'Free-Work', url: 'free-work.com' },
+		{ name: 'StackJobs', url: 'stackjobs.com' }
 	];
 
 	// Détecte le site actuel
@@ -144,6 +150,11 @@ function copyJobContent() {
 		if (!company) {
 			const hwCompany = header.querySelector('a[href*="/entreprises/"]');
 			if (hwCompany) company = hwCompany.innerText.trim();
+		}
+		// StackJobs — pas de texte visible pour l'entreprise, alt de l'image logo
+		if (!company) {
+			const sjLogo = header.querySelector('img[src*="/company-logos/"]');
+			if (sjLogo) company = sjLogo.alt.trim();
 		}
 	}
 

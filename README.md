@@ -41,7 +41,7 @@ A Chrome/Brave extension combined with a local pipeline to capture job offers an
 
 ## 🎯 Supported Job Boards
 
-All 5 sites are configured. Selectors are duplicated between `extension/content.js` (`config.siteSelectors`, floating button → webhook) and `extension/background.js` (`siteSelectors`, `Ctrl+Shift+M` → clipboard only) and must be kept in sync — see `extension/AGENTS.md`.
+All 6 sites are configured. Selectors are duplicated between `extension/content.js` (`config.siteSelectors`, floating button → webhook) and `extension/background.js` (`siteSelectors`, `Ctrl+Shift+M` → clipboard only) and must be kept in sync — see `extension/AGENTS.md`.
 
 | Site | Header/title selector | Notes |
 |------|------------------------|-------|
@@ -50,6 +50,7 @@ All 5 sites are configured. Selectors are duplicated between `extension/content.
 | Welcome to the Jungle | `[data-testid="job-metadata-block"]` | Also extracts structured skill tags |
 | HelloWork | `h1#main-content` | |
 | LinkedIn | _none — no stable DOM selector exists_ | Title/company parsed from `document.title` (`"{Title} \| {Company} \| ... \| LinkedIn"`) |
+| StackJobs | `div.rounded-3xl.min-h-screen` | Also extracts structured skill tags; company parsed from logo image `alt` attribute (no visible text) |
 
 ---
 

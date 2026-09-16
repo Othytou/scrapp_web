@@ -61,3 +61,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-sites-capture-restants.md`
   summary: Aucun framework de test automatisé n'existe pour `extension/` (aucun fichier de test, pas de hot-reload) — toute régression sur les 5 sites de capture ne peut être détectée que manuellement.
   evidence: Pré-existant, pas spécifique à cette story ni aux 3 nouveaux sites — s'applique déjà à Indeed/Free-Work. Deviendrait pertinent si le nombre de sites/sélecteurs continue de croître (risque de régression silencieuse à chaque nouvel ajout).
+
+## Deferred from: code review of spec-stackjobs-site-capture (2026-09-16)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-stackjobs-site-capture.md`
+  summary: `extension/popup.html` affiche LinkedIn, Welcome to the Jungle, HelloWork et Free-Work en statut "⏳ À configurer" alors que ces 4 sites sont opérationnels depuis la story 1.2 — seul Indeed est marqué "✅ Configuré".
+  evidence: Pré-existant depuis la story 1.2 (pas causé par l'ajout de StackJobs) — le popup n'a jamais été resynchronisé avec `config.siteSelectors` après l'ajout de LinkedIn/WTTJ/HelloWork. StackJobs a été ajouté avec le bon statut ("✅ Configuré") pour ne pas aggraver l'incohérence, mais les 4 entrées existantes restent à corriger.

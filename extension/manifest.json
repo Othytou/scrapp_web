@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
 	"name": "Job Copier Multi-Sites",
-	"version": "1.4.1",
-	"description": "Copie rapidement le contenu des offres d'emploi depuis Indeed, LinkedIn, Welcome to the Jungle, HelloWork et Free-Work",
+	"version": "1.4.3",
+	"description": "Copie rapidement le contenu des offres d'emploi depuis Indeed, LinkedIn, Welcome to the Jungle, HelloWork, Free-Work et StackJobs",
 	"permissions": [
 		"storage",
 		"activeTab",
@@ -15,6 +15,7 @@
 		"*://*.welcometothejungle.com/*",
 		"*://*.hellowork.com/*",
 		"*://*.free-work.com/*",
+		"*://*.stackjobs.com/*",
 		"http://localhost:9000/*",
 		"http://127.0.0.1:9000/*",
 		"http://0.0.0.0:9000/*"
@@ -37,7 +38,8 @@
 				"*://*.linkedin.com/*",
 				"*://*.welcometothejungle.com/*",
 				"*://*.hellowork.com/*",
-				"*://*.free-work.com/*"
+				"*://*.free-work.com/*",
+				"*://*.stackjobs.com/*"
 			],
 			"js": [
 				"content.js"
