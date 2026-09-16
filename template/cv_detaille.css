@@ -425,7 +425,8 @@
 			margin: 0;
 			box-shadow: none;
 			width: 210mm;
-			min-height: 297mm;
+			height: 297mm;
+			overflow: hidden;
 		}
 
 		.page:not(:last-child) {
@@ -435,5 +436,5 @@
 
 	@page {
 		size: A4;
-		margin: 10px 0;
+		margin: 0;
 	}

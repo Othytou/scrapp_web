@@ -35,15 +35,17 @@ async def generate_pdf(html_path: str, pdf_dir: str, filename: str, cv_type: str
     """
     Génère le PDF à partir du HTML déjà patché.
 
-    CV_TYPE == "court" : Playwright/Chromium + pagination.js (WeasyPrint perd du
-    contenu sur ce layout Grid multi-page, voir spec-fix-cv-court-pdf-pagination.md).
-    Toute autre valeur : WeasyPrint inchangé.
+    CV_TYPE in ("court", "detaille") : Playwright/Chromium + pagination.js
+    (WeasyPrint perd du contenu sur ce layout Grid multi-page combiné à un
+    débordement, voir spec-fix-cv-court-pdf-pagination.md — même cause racine
+    reproduite sur le CV détaillé, cf. conversation du 2026-09-15).
+    Toute autre valeur (aucune à ce jour) : WeasyPrint inchangé.
     """
     os.makedirs(pdf_dir, exist_ok=True)
     pdf_filename = filename.replace(".html", ".pdf")
     pdf_path = os.path.join(pdf_dir, pdf_filename)
 
-    if cv_type == "court":
+    if cv_type in ("court", "detaille"):
         await _generate_pdf_via_playwright(html_path, pdf_path)
     else:
         from weasyprint import HTML
