@@ -57,6 +57,11 @@ function copyJobContent() {
 			header: 'div.rounded-3xl.min-h-screen',      // englobe h1 (titre) + logo entreprise
 			description: 'div.space-y-6 section:nth-of-type(2)', // 2e <section> = "Description de l'offre" (la 1re est "Description de l'entreprise", même classe, non distinguable par classe seule)
 			tags: 'div.lg\\:justify-end [title]'          // chips "Stack requis" (Python/Git/Linux...)
+		},
+		'Le Studio Tech': {
+			header: 'main:has(h1)', // <main> contenant le h1 (titre) ; ceux du footer n'en ont pas
+			// 2 blocs concaténés dans l'ordre du DOM : métadonnées puis description (id "campaign-<uuid>" variable → préfixe)
+			description: '[id^="campaign-"] > div:nth-child(2), main div.overflow-hidden > div.px-4.py-5 > div.text-sm.text-gray-900'
 		}
 
 	};
@@ -68,7 +73,8 @@ function copyJobContent() {
 		{ name: 'Welcome to the Jungle', url: 'welcometothejungle.com' },
 		{ name: 'HelloWork', url: 'hellowork.com' },
 		{ name: 'Free-Work', url: 'free-work.com' },
-		{ name: 'StackJobs', url: 'stackjobs.com' }
+		{ name: 'StackJobs', url: 'stackjobs.com' },
+		{ name: 'Le Studio Tech', url: 'lestudiotech.com' }
 	];
 
 	// Détecte le site actuel
@@ -168,6 +174,10 @@ function copyJobContent() {
 			if (!company) company = titleParts[1];
 		}
 	}
+
+	// Le Studio Tech — client final anonymisé : `company` = titre du poste, dont le slug nomme le CV généré
+	// (deux offres au titre identique, ou identique sur les 40 premiers caractères, partagent le même fichier)
+	if (siteName === 'Le Studio Tech') company = position;
 
 	const payload = {
 		job_offer: jobOfferText,

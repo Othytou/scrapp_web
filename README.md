@@ -41,7 +41,7 @@ A Chrome/Brave extension combined with a local pipeline to capture job offers an
 
 ## 🎯 Supported Job Boards
 
-All 6 sites are configured. Selectors are duplicated between `extension/content.js` (`config.siteSelectors`, floating button → webhook) and `extension/background.js` (`siteSelectors`, `Ctrl+Shift+M` → clipboard only) and must be kept in sync — see `extension/AGENTS.md`.
+All 7 sites are configured. Selectors are duplicated between `extension/content.js` (`config.siteSelectors`, floating button → webhook) and `extension/background.js` (`siteSelectors`, `Ctrl+Shift+M` → clipboard only) and must be kept in sync — see `extension/AGENTS.md`.
 
 | Site | Header/title selector | Notes |
 |------|------------------------|-------|
@@ -51,6 +51,7 @@ All 6 sites are configured. Selectors are duplicated between `extension/content.
 | HelloWork | `h1#main-content` | |
 | LinkedIn | _none — no stable DOM selector exists_ | Title/company parsed from `document.title` (`"{Title} \| {Company} \| ... \| LinkedIn"`) |
 | StackJobs | `div.rounded-3xl.min-h-screen` | Also extracts structured skill tags; company parsed from logo image `alt` attribute (no visible text) |
+| Le Studio Tech | `main:has(h1)` | Description block includes the mission metadata (location, TJM, remote, experience, start date); client is anonymized on the site, so `company` is set to the job title (used to name the generated CV; offers with the same title share the same filename) |
 
 ---
 
