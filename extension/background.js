@@ -116,7 +116,20 @@ function copyJobContent() {
 		}
 	}
 
-	const jobOfferText = tagsLine + Array.from(descriptionElements)
+	// Indeed — le lieu du poste est dans l'en-tête, pas dans le corps de l'offre : testid dédié, sinon le 1er segment
+	// de l'en-tête portant un code postal (ex: "LBESOFT - 75502 Paris"). Préfixé à job_offer pour que l'agent CV le voie.
+	let locationLine = '';
+	if (siteName === 'Indeed' && header) {
+		const locEl = header.querySelector('[data-testid="inlineHeader-companyLocation"], [data-testid="jobsearch-JobInfoHeader-companyLocation"], [data-testid="job-location"]');
+		let loc = locEl ? (locEl.innerText || locEl.textContent).trim() : '';
+		if (!loc) {
+			const m = (header.innerText || header.textContent).match(/[^\n·|]*\b\d{5}\b[^\n·|]*/);
+			if (m) loc = m[0].trim();
+		}
+		if (loc) locationLine = `Lieu (en-tête de l'annonce) : ${loc}\n\n`;
+	}
+
+	const jobOfferText = locationLine + tagsLine + Array.from(descriptionElements)
 		.map(el => el.innerText.trim())
 		.join('\n\n');
 
