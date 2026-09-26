@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "Job Copier Multi-Sites",
-	"version": "1.5.1",
+	"version": "1.6.2",
 	"description": "Copie rapidement le contenu des offres d'emploi depuis Indeed, LinkedIn, Welcome to the Jungle, HelloWork, Free-Work, StackJobs et Le Studio Tech",
 	"permissions": [
 		"storage",

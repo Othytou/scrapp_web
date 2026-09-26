@@ -5,8 +5,10 @@
 const config = {
 	siteSelectors: {
 		'Indeed': {
-			header: '.jobsearch-InfoHeaderContainer',
-			description: '.jobsearch-JobComponent-description'
+			// Nouveau rendu du panneau détail (classes hashées → data-testid) ; ancien rendu gardé en repli
+			header: '[data-testid="desktop-job-header"], .jobsearch-InfoHeaderContainer',
+			// pas de testid sur le corps : on prend le bloc qui contient le titre "Description du poste"
+			description: 'div:has(> [data-testid="vj-job-description-heading"]), .jobsearch-JobComponent-description'
 		}, 'LinkedIn': {
 			header: null, // aucun sélecteur DOM stable — fallback via document.title
 			description: '[data-sdui-component="com.linkedin.sdui.generated.jobseeker.dsl.impl.aboutTheJob"]'
@@ -153,13 +155,24 @@ function addCopyButton() {
 			if (header) {
 				// Indeed
 				const titleEl = header.querySelector('[data-testid="jobsearch-JobInfoHeader-title"]')
+					|| header.querySelector('[data-testid="vj-job-title"]')
 					|| header.querySelector('h1')
 					|| header.querySelector('h2');
 				const companyEl = header.querySelector('[data-testid="inlineHeader-companyName"]')
-					|| header.querySelector('[data-testid="jobsearch-JobInfoHeader-companyName"]');
+					|| header.querySelector('[data-testid="jobsearch-JobInfoHeader-companyName"]')
+					|| header.querySelector('[data-testid="company-info-metadata"] a');
 
-				if (titleEl) position = titleEl.innerText.trim().replace(/\s*-\s*job post$/i, '').trim();
-				if (companyEl) company = companyEl.innerText.trim();
+				// innerText vide si l'en-tête est masqué (Indeed bascule entre en-tête complet et compact) → textContent en repli
+				if (titleEl) position = (titleEl.innerText || titleEl.textContent).trim().replace(/\s*-\s*job post$/i, '').trim();
+				if (companyEl) company = (companyEl.innerText || companyEl.textContent).trim();
+				// Indeed (nouveau rendu) — entreprise sans lien : premier texte du bloc métadonnées
+				if (!company) {
+					const indeedMeta = header.querySelector('[data-testid="company-info-metadata"]');
+					if (indeedMeta) {
+						const firstLeaf = Array.from(indeedMeta.querySelectorAll('*')).find(n => Array.from(n.childNodes).some(c => c.nodeType === 3 && c.textContent.trim())); // 1er élément portant du texte propre (le nom, avant le "·" et la note)
+						if (firstLeaf) company = Array.from(firstLeaf.childNodes).filter(c => c.nodeType === 3).map(c => c.textContent.trim()).join('');
+					}
+				}
 				// Free-Work — fallback si Indeed n'a rien trouvé
 				if (!position) {
 					const fwTitle = header.querySelector('h1');
