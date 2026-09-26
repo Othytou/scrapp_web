@@ -155,6 +155,15 @@ function addCopyButton() {
 				}
 				if (loc) locationLine = `Lieu (en-tête de l'annonce) : ${loc}\n\n`;
 			}
+			// HelloWork — le lieu ("Levallois-Perret - 92") est hors du <h1#main-content> mais dans son bloc parent
+			// (titre, entreprise, lieu, contrat) : on prend le <li> / la ligne au format "Ville - dépt".
+			if (siteName === 'HelloWork' && header && header.parentElement) {
+				const box = header.parentElement;
+				const li = Array.from(box.querySelectorAll('li')).find(l => /\S.*\s-\s\d{2,3}\s*$/.test((l.innerText || l.textContent).trim()));
+				const m = li ? null : (box.innerText || box.textContent).match(/^.*\s-\s\d{2,3}\s*$/m);
+				const loc = li ? (li.innerText || li.textContent).trim() : (m ? m[0].trim() : '');
+				if (loc) locationLine = `Lieu (en-tête de l'annonce) : ${loc}\n\n`;
+			}
 
 			const jobOfferText = locationLine + tagsLine + Array.from(descriptionElements)
 				.map(el => el.innerText.trim())
